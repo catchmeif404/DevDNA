@@ -1,78 +1,162 @@
+<div align="center">
+
 # DevDNA
 
-GitHub 공개 활동 데이터를 분석해 개발자의 코딩 패턴, 기술 스택, 활동 시간, 개발 성향을 재미있게 보여주는 오픈소스 프로젝트.
+**Turn your public GitHub activity into a tiny developer identity worth showing off.**
 
-> 자세한 설계는 [`docs/설계문서.md`](docs/설계문서.md) 참고.
+Live demo: **not deployed yet**
 
-## 상태
+`catchmeif404`
 
-MVP 파이프라인 동작 확인 완료 — GitHub 로그인 포함 (아래 "알려진 제약" 참고)
+</div>
 
-## 기술 스택
+---
 
-- **Frontend**: Next.js, TypeScript, Tailwind CSS
-- **Backend**: Spring Boot (Java 21)
-- **Worker**: Spring Boot (Java 21)
-- **DB**: PostgreSQL, Redis
-- **배포**: Railway
+## Why I built this
 
-## 로컬 개발
+GitHub already knows how you build: when you commit, what you fix, which
+languages you keep coming back to, and whether you live in PRs, tests, docs, or
+late-night streaks.
+
+But most profile tools flatten that into raw numbers. DevDNA turns the same
+public activity into a developer type, a short summary, and an animated animal
+badge you can put in your GitHub profile README.
+
+The point is not to rank developers. The point is to make your coding pattern
+feel like a small collectible.
+
+## What it does
+
+- **Login-based self analysis** - sign in with GitHub and DevDNA analyzes the
+  account you logged in with. There is no anonymous "analyze anyone" flow.
+- **10 developer animals** - Night Owl, Debug Cat, Builder Beaver, Polyglot
+  Parrot, Weekend Otter, Tidy Fox, Archivist Elephant, Lab Mouse, Explorer
+  Turtle, and Team Penguin.
+- **Animated README badge** - `GET /api/badge/{username}.svg` returns a moving
+  SVG mascot badge designed for GitHub README `<img>` embedding.
+- **Share card** - `GET /api/share/{username}/card` renders a larger SVG card
+  from the latest saved result.
+- **Rule-based summary** - the `ai_summary` field exists, but the MVP does not
+  call an LLM. It stores a deterministic template summary generated from the
+  computed features.
+
+## Badge
+
+Once the backend is deployed publicly and your account has been analyzed, add
+this to your GitHub profile README:
+
+```markdown
+![DevDNA](https://<your-backend-domain>/api/badge/catchmeif404.svg)
+```
+
+If the account has no saved analysis yet, the endpoint still returns a gray
+`no data yet` badge instead of a broken image.
+
+Local preview:
+
+```markdown
+![DevDNA](http://localhost:8090/api/badge/catchmeif404.svg)
+```
+
+That only works on your machine. GitHub needs a public HTTPS backend URL.
+
+## Stack
+
+| | |
+|---|---|
+| Frontend | Next.js, TypeScript, Tailwind CSS |
+| Backend | Spring Boot, Java 21, Flyway |
+| Worker | Spring Boot, Java 21 |
+| Data | PostgreSQL for users/jobs/results, Redis for the analysis queue |
+| Auth | GitHub OAuth |
+| Deployment target | Railway |
+
+## Architecture
+
+```text
+GitHub login
+    |
+    v
+Backend -- upsert user + create job --> PostgreSQL
+    |
+    +-- enqueue job id ----------------> Redis
+                                          |
+                                          v
+Worker -- collect public GitHub activity -> GitHub API
+    |
+    +-- extract features
+    +-- score developer type
+    +-- generate rule-based summary
+    +-- persist result ----------------> PostgreSQL
+
+README <img> -- GET /api/badge/{username}.svg --> animated SVG badge
+```
+
+The backend and worker are separate Spring Boot apps sharing the same database
+schema. Only the backend runs Flyway migrations; the worker expects the schema
+to already exist.
+
+## Running it locally
+
+Create environment variables, then start the full stack:
 
 ```bash
 cp .env.example .env
 docker compose up -d
 ```
 
-| 서비스 | URL |
+| Service | URL |
 |---|---|
 | Frontend | http://localhost:3010 |
 | Backend API | http://localhost:8090 |
 | Worker | http://localhost:8081 |
 
-각 서비스 헬스체크:
+Health checks:
 
 ```bash
 curl http://localhost:8090/actuator/health
 curl http://localhost:8081/actuator/health
 ```
 
-브라우저에서 http://localhost:3010 접속 후 "GitHub로 로그인"을 누르면 로그인한 계정 자신의 공개 활동을 자동으로 수집·분석해 결과 페이지를 보여준다. (분석 결과 자체는 인증 없이도 `GET /api/users/{username}/result`로 조회 가능 — 애초에 공개 GitHub 활동이라 접근 자체를 막지는 않는다.)
-
-## README 배지
-
-분석 결과를 자신의 GitHub 프로필(`{username}/{username}` 레포)이나 다른 레포의 README에 뱃지로 박아넣을 수 있다. DevDNA가 자동으로 뭔가를 해주는 게 아니라, **본인이 직접 아래 마크다운 한 줄을 자기 README.md에 추가하고 커밋·푸시**하면 된다 — GitHub이 README를 보여줄 때마다 이 URL로 이미지를 다시 요청해서 항상 최신 상태로 그려진다.
-
-```markdown
-![DevDNA](https://<배포한-도메인>/api/badge/{username}.svg)
-```
-
-- `{username}` 자리에 본인 GitHub username을 넣는다.
-- **먼저 그 계정으로 한 번 분석을 돌려놔야 한다** (사이트에서 로그인 → 자동 분석). 분석 이력이 없으면 회색 "no data yet" 뱃지가 뜬다 (깨진 이미지 대신).
-- 뱃지는 움직이는 SVG 동물 마스코트와 개발자 유형별 색상을 사용한다 (예: Night Owl은 보라, Debug Cat은 빨강, Archivist Elephant는 주황) — 유형이 바뀌면 뱃지 캐릭터와 색도 자동으로 바뀐다.
-- 로컬 개발 중에는 `https://<배포한-도메인>` 대신 `http://localhost:8090`을 써서 로컬에서만 미리 볼 수 있다 (`http://localhost:8090/api/badge/{username}.svg`). GitHub 자체에 실제로 보이게 하려면 backend를 공개 도메인에 배포해야 한다 — 아직 배포 전이라 지금은 로컬 미리보기만 가능하다.
-
-## 알려진 제약 (MVP 현재 범위)
-
-- **AI 자연어 분석 제외**: 설계문서 3.2절에 따라 LLM 기반 해석은 MVP 이후 범위. 지금은 규칙 기반 템플릿 문장으로 대체.
-- **공유 카드는 온디맨드 SVG**: S3/R2에 미리 저장하지 않고 `GET /api/share/{username}/card` 요청 시마다 DB 데이터로 즉시 렌더링한다.
-- **원본 데이터 미보관**: GitHub에서 수집한 repo/commit 원본은 저장하지 않고 분석 중에만 메모리에 두며, 최종 계산 결과(`analysis_results`)만 DB에 남긴다 (설계문서 20절 최소 수집 원칙).
-
-## 프로젝트 구조
+For the login flow, create a real GitHub OAuth App and set:
 
 ```text
-devwrapped/
-├── frontend/    # Next.js
-├── backend/     # Spring Boot API 서버
-├── worker/      # Spring Boot 분석 워커
-├── docs/        # 설계 문서
-└── docker-compose.yml
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
 ```
 
-## 기여하기
+Local callback URL:
 
-이슈 제보, 기능 제안, PR 모두 환영합니다. 시작하기 전에 [`CONTRIBUTING.md`](CONTRIBUTING.md)를 한 번 봐주세요 (브랜치/커밋 컨벤션, 테스트 실행 방법 등).
+```text
+http://localhost:8090/api/auth/github/callback
+```
 
-## 라이선스
+## Known issues
+
+- Not deployed yet, so GitHub profile README badges only work as local preview.
+- No LLM integration yet. Summaries are rule-based templates.
+- Raw GitHub repo/commit data is not stored; only final analysis results are
+  persisted.
+- Redis is used as a simple queue and has no visibility timeout or automatic
+  retry replay.
+- GitHub username changes are not fully normalized yet; results still keep a
+  denormalized `github_username` string for public lookup.
+
+## Roadmap
+
+- Public deployment and real `catchmeif404` profile badge
+- Better mascot art pass for all 10 animals
+- Result page animal illustrations, not just README badges
+- Optional LLM-backed explanation after deterministic scoring
+- More robust queue retry/DLQ replay
+- Username-change-safe result ownership model
+
+## Contributing
+
+Issues, ideas, and PRs are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md)
+before opening a PR.
+
+## License
 
 MIT
 
@@ -80,6 +164,6 @@ MIT
 
 <div align="center">
 
-Built by `catchmeif404` — building things nobody asked for.
+Built by `catchmeif404` - building things nobody asked for.
 
 </div>
