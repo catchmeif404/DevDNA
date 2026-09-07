@@ -1,53 +1,16 @@
 package dev.devwrapped.backend.share;
 
 import dev.devwrapped.backend.analysis.AnalysisResult;
-import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /** Renders the section 16 share card as SVG (no headless browser / raster lib needed for MVP). */
 @Component
 public class ShareCardGenerator {
 
-    private static final Map<String, String> EMOJI = Map.ofEntries(
-            Map.entry("NIGHT_OWL", "🌙"),
-            Map.entry("BUG_SLAYER", "🔥"),
-            Map.entry("BUILDER", "🏗"),
-            Map.entry("POLYGLOT", "🌐"),
-            Map.entry("WEEKEND_WARRIOR", "🎉"),
-            Map.entry("REFACTOR_MASTER", "🧹"),
-            Map.entry("DOCUMENTARIAN", "📚"),
-            Map.entry("TESTER", "🧪"),
-            Map.entry("EXPLORER", "🧭"),
-            Map.entry("COLLABORATOR", "🤝"));
-
-    private static final Map<String, String> LABEL = Map.ofEntries(
-            Map.entry("NIGHT_OWL", "NIGHT OWL"),
-            Map.entry("BUG_SLAYER", "BUG SLAYER"),
-            Map.entry("BUILDER", "BUILDER"),
-            Map.entry("POLYGLOT", "POLYGLOT"),
-            Map.entry("WEEKEND_WARRIOR", "WEEKEND WARRIOR"),
-            Map.entry("REFACTOR_MASTER", "REFACTOR MASTER"),
-            Map.entry("DOCUMENTARIAN", "DOCUMENTARIAN"),
-            Map.entry("TESTER", "TESTER"),
-            Map.entry("EXPLORER", "EXPLORER"),
-            Map.entry("COLLABORATOR", "COLLABORATOR"));
-
-    private static final Map<String, String> TAGLINE = Map.ofEntries(
-            Map.entry("NIGHT_OWL", "새벽에 강한 개발자"),
-            Map.entry("BUG_SLAYER", "버그를 사냥하는 개발자"),
-            Map.entry("BUILDER", "꾸준히 만들어가는 개발자"),
-            Map.entry("POLYGLOT", "여러 언어를 넘나드는 개발자"),
-            Map.entry("WEEKEND_WARRIOR", "주말에 불타오르는 개발자"),
-            Map.entry("REFACTOR_MASTER", "코드를 갈고 닦는 개발자"),
-            Map.entry("DOCUMENTARIAN", "기록을 남기는 개발자"),
-            Map.entry("TESTER", "테스트로 증명하는 개발자"),
-            Map.entry("EXPLORER", "여러 저장소를 넘나드는 개발자"),
-            Map.entry("COLLABORATOR", "협업으로 성장하는 개발자"));
-
     public String generate(AnalysisResult result) {
-        String emoji = EMOJI.getOrDefault(result.getDeveloperType(), "✨");
-        String label = LABEL.getOrDefault(result.getDeveloperType(), result.getDeveloperType());
-        String tagline = TAGLINE.getOrDefault(result.getDeveloperType(), "고유한 개발 스타일을 가진 개발자");
+        String emoji = DeveloperTypeMeta.emoji(result.getDeveloperType());
+        String label = DeveloperTypeMeta.label(result.getDeveloperType());
+        String tagline = DeveloperTypeMeta.tagline(result.getDeveloperType());
         String topLanguage = result.getTopLanguage() == null ? "N/A" : result.getTopLanguage();
 
         return """

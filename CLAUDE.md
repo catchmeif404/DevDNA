@@ -101,10 +101,14 @@ App Router, minimal structure: `src/app/page.tsx` (calls `GET /api/users/me` to 
 
 Postgres tables (backend-owned, via Flyway migrations in `backend/src/main/resources/db/migration/`): `users`, `analysis_jobs` (status enum `PENDING`/`COLLECTING`/`ANALYZING`/`COMPLETED`/`FAILED`), `analysis_results` (denormalized final stats: commit/repo/PR counts, peak hour/weekday, language ratios as JSON, `type_scores` JSON, `dna_vector` JSON, `ai_summary` text).
 
+### Share cards + README badge
+
+`backend/.../share/DeveloperTypeMeta` is the single source of truth for emoji/label/tagline per developer type on the backend side (used by both `ShareCardGenerator` and `BadgeGenerator` — keep it in sync with the worker's `DeveloperTypeScorer` type list and `frontend/src/lib/developerType.ts`). `GET /api/share/{username}/card` renders the big vertical share card (404 if no result yet); `GET /api/badge/{username}.svg` (`ShareController.badge`) renders a small shields.io-style badge for embedding elsewhere and always returns 200 — a gray "no data yet" badge instead of a 404 broken image when the username hasn't been analyzed. Both endpoints are public (`SecurityConfig` permits `/api/share/**` and `/api/badge/**`) since they only expose already-computed public data.
+
 ### Known scope gaps (don't assume these exist)
 
 - No S3/R2 storage — share cards render on-demand as SVG from `analysis_results` on each request
 - No LLM integration — `SummaryGenerator` produces rule-based template text, not an AI call
 - Raw collected GitHub data (repos/commits) is not persisted, only the final `analysis_results` row
 - Issues aren't collected at all (design doc mentions them); PRs are collected as a count only, not individual PR data (no `merged_at`, etc.)
-- README Badge (`/badge/{username}.svg`) and social-share buttons (design doc Phase 6) aren't built
+- Social-share buttons (X/Threads, design doc Phase 6) aren't built — the README badge is (see below)

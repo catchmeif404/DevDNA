@@ -38,6 +38,16 @@ curl http://localhost:8081/actuator/health
 
 브라우저에서 http://localhost:3010 접속 후 "GitHub로 로그인"을 누르면 로그인한 계정 자신의 공개 활동을 자동으로 수집·분석해 결과 페이지를 보여준다. (분석 결과 자체는 인증 없이도 `GET /api/users/{username}/result`로 조회 가능 — 애초에 공개 GitHub 활동이라 접근 자체를 막지는 않는다.)
 
+## README 배지
+
+분석 결과를 자신의 GitHub 프로필/레포 README에 뱃지로 붙일 수 있다:
+
+```markdown
+![DevWrapped](http://localhost:8090/api/badge/{username}.svg)
+```
+
+아직 분석한 적 없는 username이면 "no data yet" 회색 뱃지가 뜬다 (깨진 이미지 대신).
+
 ## 알려진 제약 (MVP 현재 범위)
 
 - **AI 자연어 분석 제외**: 설계문서 3.2절에 따라 LLM 기반 해석은 MVP 이후 범위. 지금은 규칙 기반 템플릿 문장으로 대체.

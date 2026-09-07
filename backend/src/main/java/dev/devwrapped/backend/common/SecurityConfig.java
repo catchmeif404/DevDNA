@@ -29,7 +29,7 @@ public class SecurityConfig {
                         // POST /api/analyses creates a job for the caller's own account (AnalysisController)
                         // and must come before the broader /api/analyses/** permitAll below.
                         .requestMatchers(HttpMethod.POST, "/api/analyses").authenticated()
-                        .requestMatchers("/actuator/**", "/api/analyses/**", "/api/share/**",
+                        .requestMatchers("/actuator/**", "/api/analyses/**", "/api/share/**", "/api/badge/**",
                                 "/api/users/me", "/api/users/*/result", "/api/auth/**", "/oauth2/**", "/login/**")
                         .permitAll()
                         .anyRequest().authenticated())
