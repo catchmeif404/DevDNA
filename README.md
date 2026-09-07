@@ -48,7 +48,7 @@ curl http://localhost:8081/actuator/health
 
 - `{username}` 자리에 본인 GitHub username을 넣는다.
 - **먼저 그 계정으로 한 번 분석을 돌려놔야 한다** (사이트에서 로그인 → 자동 분석). 분석 이력이 없으면 회색 "no data yet" 뱃지가 뜬다 (깨진 이미지 대신).
-- 개발자 유형마다 뱃지 색이 다르다 (예: NIGHT OWL은 보라, BUG SLAYER는 빨강, DOCUMENTARIAN은 주황) — 유형이 바뀌면 뱃지 색도 자동으로 바뀐다.
+- 뱃지는 움직이는 SVG 동물 마스코트와 개발자 유형별 색상을 사용한다 (예: Night Owl은 보라, Debug Cat은 빨강, Archivist Elephant는 주황) — 유형이 바뀌면 뱃지 캐릭터와 색도 자동으로 바뀐다.
 - 로컬 개발 중에는 `https://<배포한-도메인>` 대신 `http://localhost:8090`을 써서 로컬에서만 미리 볼 수 있다 (`http://localhost:8090/api/badge/{username}.svg`). GitHub 자체에 실제로 보이게 하려면 backend를 공개 도메인에 배포해야 한다 — 아직 배포 전이라 지금은 로컬 미리보기만 가능하다.
 
 ## 알려진 제약 (MVP 현재 범위)

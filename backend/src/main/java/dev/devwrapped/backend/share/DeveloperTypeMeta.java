@@ -2,7 +2,7 @@ package dev.devwrapped.backend.share;
 
 import java.util.Map;
 
-/** Shared emoji/label/tagline lookup for the 10 developer types (worker's DeveloperTypeScorer owns the list). */
+/** Shared emoji/animal label/tagline lookup for the 10 developer types (worker's DeveloperTypeScorer owns the list). */
 final class DeveloperTypeMeta {
 
     private static final Map<String, String> EMOJI = Map.ofEntries(
@@ -19,15 +19,15 @@ final class DeveloperTypeMeta {
 
     private static final Map<String, String> LABEL = Map.ofEntries(
             Map.entry("NIGHT_OWL", "NIGHT OWL"),
-            Map.entry("BUG_SLAYER", "BUG SLAYER"),
-            Map.entry("BUILDER", "BUILDER"),
-            Map.entry("POLYGLOT", "POLYGLOT"),
-            Map.entry("WEEKEND_WARRIOR", "WEEKEND WARRIOR"),
-            Map.entry("REFACTOR_MASTER", "REFACTOR MASTER"),
-            Map.entry("DOCUMENTARIAN", "DOCUMENTARIAN"),
-            Map.entry("TESTER", "TESTER"),
-            Map.entry("EXPLORER", "EXPLORER"),
-            Map.entry("COLLABORATOR", "COLLABORATOR"));
+            Map.entry("BUG_SLAYER", "DEBUG CAT"),
+            Map.entry("BUILDER", "BUILDER BEAVER"),
+            Map.entry("POLYGLOT", "POLYGLOT PARROT"),
+            Map.entry("WEEKEND_WARRIOR", "WEEKEND OTTER"),
+            Map.entry("REFACTOR_MASTER", "TIDY FOX"),
+            Map.entry("DOCUMENTARIAN", "ARCHIVIST ELEPHANT"),
+            Map.entry("TESTER", "LAB MOUSE"),
+            Map.entry("EXPLORER", "EXPLORER TURTLE"),
+            Map.entry("COLLABORATOR", "TEAM PENGUIN"));
 
     private static final Map<String, String> TAGLINE = Map.ofEntries(
             Map.entry("NIGHT_OWL", "새벽에 강한 개발자"),
