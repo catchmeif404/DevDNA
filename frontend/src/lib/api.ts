@@ -50,3 +50,25 @@ export function shareCardUrl(username: string): string {
 export function githubLoginUrl(): string {
   return `${API_URL}/api/auth/github`;
 }
+
+export interface Me {
+  githubLogin: string;
+  avatarUrl: string | null;
+}
+
+export function getMe(): Promise<Me | null> {
+  return fetch(`${API_URL}/api/users/me`, { credentials: "include" }).then((res) => {
+    if (res.status === 401) return null;
+    return json<Me>(res);
+  });
+}
+
+export function startMyAnalysis(): Promise<{ jobId: number; status: AnalysisStatus }> {
+  return fetch(`${API_URL}/api/analyses`, { method: "POST", credentials: "include" }).then((res) =>
+    json<{ jobId: number; status: AnalysisStatus }>(res),
+  );
+}
+
+export function logout(): Promise<void> {
+  return fetch(`${API_URL}/api/auth/logout`, { method: "POST", credentials: "include" }).then(() => undefined);
+}

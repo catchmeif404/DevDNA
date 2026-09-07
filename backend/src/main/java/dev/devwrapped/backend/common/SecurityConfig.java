@@ -30,7 +30,7 @@ public class SecurityConfig {
                         // and must come before the broader /api/analyses/** permitAll below.
                         .requestMatchers(HttpMethod.POST, "/api/analyses").authenticated()
                         .requestMatchers("/actuator/**", "/api/analyses/**", "/api/share/**",
-                                "/api/users/*/result", "/api/auth/**", "/oauth2/**", "/login/**")
+                                "/api/users/me", "/api/users/*/result", "/api/auth/**", "/oauth2/**", "/login/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2
