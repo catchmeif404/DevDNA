@@ -65,6 +65,10 @@ devwrapped/
 └── docker-compose.yml
 ```
 
+## 기여하기
+
+이슈 제보, 기능 제안, PR 모두 환영합니다. 시작하기 전에 [`CONTRIBUTING.md`](CONTRIBUTING.md)를 한 번 봐주세요 (브랜치/커밋 컨벤션, 테스트 실행 방법 등).
+
 ## 라이선스
 
 MIT
