@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: devwrapped-backend
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:devwrapped}
+    username: ${DB_USER:devwrapped}
+    password: ${DB_PASSWORD:devwrapped}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            # 실제 GitHub OAuth App을 만들기 전까지는 더미 값으로 기동만 가능하게 한다.
+            # (Spring Boot 4의 OAuth2ClientProperties는 빈 client-id를 기동 실패로 처리한다.)
+            client-id: ${GITHUB_CLIENT_ID:dummy-client-id}
+            client-secret: ${GITHUB_CLIENT_SECRET:dummy-client-secret}
+            scope: read:user
+            redirect-uri: "{baseUrl}/api/auth/{registrationId}/callback"
+
+server:
+  port: ${PORT:8080}
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:3010}
+  analysis-queue-key: analysis:queue
+  analysis-dlq-key: analysis:dlq

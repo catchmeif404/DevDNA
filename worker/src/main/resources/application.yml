@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: devwrapped-worker
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:devwrapped}
+    username: ${DB_USER:devwrapped}
+    password: ${DB_PASSWORD:devwrapped}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+server:
+  port: ${PORT:8081}
+
+app:
+  analysis-queue-key: analysis:queue
+  analysis-dlq-key: analysis:dlq
