@@ -13,11 +13,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class SummaryGenerator {
 
-    private static final Map<String, String> OPENING = Map.of(
-            "NIGHT_OWL", "새벽 시간대에 유독 커밋이 몰리는",
-            "BUG_SLAYER", "버그를 찾아 고치는 데 유독 강한",
-            "BUILDER", "꾸준히 기능을 쌓아 올리는",
-            "POLYGLOT", "여러 언어를 넘나드는");
+    private static final Map<String, String> OPENING = Map.ofEntries(
+            Map.entry("NIGHT_OWL", "새벽 시간대에 유독 커밋이 몰리는"),
+            Map.entry("BUG_SLAYER", "버그를 찾아 고치는 데 유독 강한"),
+            Map.entry("BUILDER", "꾸준히 기능을 쌓아 올리는"),
+            Map.entry("POLYGLOT", "여러 언어를 넘나드는"),
+            Map.entry("WEEKEND_WARRIOR", "주말에 유독 커밋이 몰리는"),
+            Map.entry("REFACTOR_MASTER", "코드 정리와 리팩터링에 진심인"),
+            Map.entry("DOCUMENTARIAN", "문서와 기록을 꼼꼼히 남기는"),
+            Map.entry("TESTER", "테스트 코드로 안정성을 챙기는"),
+            Map.entry("EXPLORER", "여러 저장소를 넘나들며 활동하는"),
+            Map.entry("COLLABORATOR", "PR과 협업으로 존재감을 드러내는"));
 
     public String generate(Features features, ScoringResult scoring) {
         String opening = OPENING.getOrDefault(scoring.developerType(), "고유한 스타일을 가진");

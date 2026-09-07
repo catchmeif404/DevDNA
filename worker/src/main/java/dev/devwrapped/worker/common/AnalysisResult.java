@@ -51,17 +51,9 @@ public class AnalysisResult {
     @Column(name = "language_ratios")
     private String languageRatios;
 
-    @Column(name = "night_owl_score", nullable = false)
-    private Integer nightOwlScore;
-
-    @Column(name = "bug_slayer_score", nullable = false)
-    private Integer bugSlayerScore;
-
-    @Column(name = "builder_score", nullable = false)
-    private Integer builderScore;
-
-    @Column(name = "polyglot_score", nullable = false)
-    private Integer polyglotScore;
+    /** JSON-serialized {@code Map<String, Integer>} of developer type -> score (0-100). */
+    @Column(name = "type_scores")
+    private String typeScores;
 
     @Column(name = "developer_type", nullable = false)
     private String developerType;

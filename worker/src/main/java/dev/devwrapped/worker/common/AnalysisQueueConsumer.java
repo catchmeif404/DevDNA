@@ -118,10 +118,7 @@ public class AnalysisQueueConsumer {
             result.setPeakWeekday(features.peakWeekday());
             result.setTopLanguage(features.topLanguage());
             result.setLanguageRatios(toJson(features.languageRatios()));
-            result.setNightOwlScore(scoring.nightOwlScore());
-            result.setBugSlayerScore(scoring.bugSlayerScore());
-            result.setBuilderScore(scoring.builderScore());
-            result.setPolyglotScore(scoring.polyglotScore());
+            result.setTypeScores(toJson(scoring.typeScores()));
             result.setDeveloperType(scoring.developerType());
             result.setDnaVector(toJson(scoring.dnaVector()));
             result.setAiSummary(summary);

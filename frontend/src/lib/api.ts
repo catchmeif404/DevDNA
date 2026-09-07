@@ -18,10 +18,7 @@ export interface AnalysisResult {
   peakWeekday: number;
   topLanguage: string | null;
   languageRatios: string | null;
-  nightOwlScore: number;
-  bugSlayerScore: number;
-  builderScore: number;
-  polyglotScore: number;
+  typeScores: string | null;
   developerType: string;
   dnaVector: string | null;
   aiSummary: string | null;
@@ -32,14 +29,6 @@ async function json<T>(res: Response): Promise<T> {
     throw new Error(`API error ${res.status}`);
   }
   return res.json() as Promise<T>;
-}
-
-export function createAnalysis(githubUsername: string): Promise<{ jobId: number; status: AnalysisStatus }> {
-  return fetch(`${API_URL}/api/analyses`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ githubUsername }),
-  }).then((res) => json<{ jobId: number; status: AnalysisStatus }>(res));
 }
 
 export function getJobStatus(jobId: number): Promise<JobStatus> {
@@ -56,4 +45,8 @@ export function getLatestResultByUsername(username: string): Promise<AnalysisRes
 
 export function shareCardUrl(username: string): string {
   return `${API_URL}/api/share/${username}/card`;
+}
+
+export function githubLoginUrl(): string {
+  return `${API_URL}/api/auth/github`;
 }

@@ -90,6 +90,8 @@ export default function ResultPage() {
   const languageRatios: Record<string, number> = result.languageRatios
     ? JSON.parse(result.languageRatios)
     : {};
+  const typeScores: Record<string, number> = result.typeScores ? JSON.parse(result.typeScores) : {};
+  const sortedTypeScores = Object.entries(typeScores).sort((a, b) => b[1] - a[1]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-indigo-950 px-6 py-16 text-white">
@@ -120,10 +122,10 @@ export default function ResultPage() {
             Personality
           </h2>
           <div className="space-y-3">
-            <ScoreBar emoji="🌙" label="Night Owl" score={result.nightOwlScore} />
-            <ScoreBar emoji="🔥" label="Bug Slayer" score={result.bugSlayerScore} />
-            <ScoreBar emoji="🏗" label="Builder" score={result.builderScore} />
-            <ScoreBar emoji="🌐" label="Polyglot" score={result.polyglotScore} />
+            {sortedTypeScores.map(([type, score]) => {
+              const typeMeta = developerTypeMeta(type);
+              return <ScoreBar key={type} emoji={typeMeta.emoji} label={typeMeta.label} score={score} />;
+            })}
           </div>
         </div>
 
@@ -182,7 +184,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 function ScoreBar({ emoji, label, score }: { emoji: string; label: string; score: number }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="w-28 shrink-0 text-sm text-slate-300">
+      <span className="w-40 shrink-0 text-sm text-slate-300">
         {emoji} {label}
       </span>
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-800">
