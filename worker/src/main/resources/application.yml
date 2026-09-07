@@ -1,6 +1,6 @@
 spring:
   application:
-    name: devwrapped-worker
+    name: devdna-worker
   jackson:
     property-naming-strategy: SNAKE_CASE
   datasource:

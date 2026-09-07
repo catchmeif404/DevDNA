@@ -1,6 +1,6 @@
 spring:
   application:
-    name: devwrapped-backend
+    name: devdna-backend
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:devwrapped}
     username: ${DB_USER:devwrapped}

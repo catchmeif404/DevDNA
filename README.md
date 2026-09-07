@@ -1,4 +1,4 @@
-# DevWrapped
+# DevDNA
 
 GitHub 공개 활동 데이터를 분석해 개발자의 코딩 패턴, 기술 스택, 활동 시간, 개발 성향을 재미있게 보여주는 오픈소스 프로젝트.
 
@@ -40,10 +40,10 @@ curl http://localhost:8081/actuator/health
 
 ## README 배지
 
-분석 결과를 자신의 GitHub 프로필(`{username}/{username}` 레포)이나 다른 레포의 README에 뱃지로 박아넣을 수 있다. DevWrapped가 자동으로 뭔가를 해주는 게 아니라, **본인이 직접 아래 마크다운 한 줄을 자기 README.md에 추가하고 커밋·푸시**하면 된다 — GitHub이 README를 보여줄 때마다 이 URL로 이미지를 다시 요청해서 항상 최신 상태로 그려진다.
+분석 결과를 자신의 GitHub 프로필(`{username}/{username}` 레포)이나 다른 레포의 README에 뱃지로 박아넣을 수 있다. DevDNA가 자동으로 뭔가를 해주는 게 아니라, **본인이 직접 아래 마크다운 한 줄을 자기 README.md에 추가하고 커밋·푸시**하면 된다 — GitHub이 README를 보여줄 때마다 이 URL로 이미지를 다시 요청해서 항상 최신 상태로 그려진다.
 
 ```markdown
-![DevWrapped](https://<배포한-도메인>/api/badge/{username}.svg)
+![DevDNA](https://<배포한-도메인>/api/badge/{username}.svg)
 ```
 
 - `{username}` 자리에 본인 GitHub username을 넣는다.

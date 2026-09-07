@@ -35,14 +35,14 @@ public class BadgeGenerator {
     }
 
     private String render(String emoji, String line2, String accentColor) {
-        String line1 = "DEVWRAPPED";
+        String line1 = "DEVDNA";
         int line1Width = line1.length() * 5 + 10;
         int line2Width = line2.length() * 8 + 10;
         int totalWidth = TEXT_X + Math.max(line1Width, line2Width) + 14;
         int circleCenter = MARGIN + CIRCLE_DIAMETER / 2;
 
         return """
-                <svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" role="img" aria-label="DevWrapped: %s">
+                <svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" role="img" aria-label="DevDNA: %s">
                   <defs>
                     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
                       <stop offset="0" stop-color="%s"/>

@@ -27,7 +27,7 @@ public class GithubApiClient {
                 .baseUrl("https://api.github.com")
                 .defaultHeader("Accept", "application/vnd.github+json")
                 .defaultHeader("X-GitHub-Api-Version", "2022-11-28")
-                .defaultHeader("User-Agent", "DevWrapped")
+                .defaultHeader("User-Agent", "DevDNA")
                 .build();
     }
 

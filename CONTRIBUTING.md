@@ -1,6 +1,6 @@
-# Contributing to DevWrapped
+# Contributing to DevDNA
 
-DevWrapped는 오픈소스 프로젝트입니다. 이슈 제보, 기능 제안, PR 모두 환영합니다.
+DevDNA는 오픈소스 프로젝트입니다. 이슈 제보, 기능 제안, PR 모두 환영합니다.
 
 ## 시작하기
 

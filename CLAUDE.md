@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-DevWrapped analyzes a GitHub user's public activity (commits, repos, PRs) and generates a "developer type" / stats card, similar in spirit to Spotify Wrapped. It is an open-source portfolio project (see `docs/설계문서.md` for the full design doc — written ahead of implementation, so treat it as intent/roadmap, not a description of current code; the README's "알려진 제약" section is the accurate current-state summary).
+DevDNA analyzes a GitHub user's public activity (commits, repos, PRs) and generates a "developer type" / stats card, similar in spirit to Spotify Wrapped. It is an open-source portfolio project (see `docs/설계문서.md` for the full design doc — written ahead of implementation, so treat it as intent/roadmap, not a description of current code; the README's "알려진 제약" section is the accurate current-state summary).
 
 Full-stack, three deployable services in one repo:
 

@@ -94,14 +94,14 @@ export default function ResultPage() {
   const sortedTypeScores = Object.entries(typeScores).sort((a, b) => b[1] - a[1]);
 
   const pageUrl = `${window.location.origin}/dev/${result.githubUsername}`;
-  const shareText = `나는 ${meta.emoji} ${meta.label}! "${meta.tagline}" - DevWrapped로 내 GitHub 분석해보기`;
+  const shareText = `나는 ${meta.emoji} ${meta.label}! "${meta.tagline}" - DevDNA로 내 GitHub 분석해보기`;
   const xShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`;
   const threadsShareUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(`${shareText} ${pageUrl}`)}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-indigo-950 px-6 py-16 text-white">
       <div className="mx-auto max-w-2xl">
-        <p className="text-center text-sm tracking-[0.3em] text-indigo-300">DEV WRAPPED</p>
+        <p className="text-center text-sm tracking-[0.3em] text-indigo-300">DEV DNA</p>
         <p className="mt-2 text-center text-slate-400">{result.githubUsername}님의 개발자 유형</p>
         <div className="mt-6 text-center text-7xl">{meta.emoji}</div>
         <h1 className="mt-2 text-center text-4xl font-bold">{meta.label}</h1>

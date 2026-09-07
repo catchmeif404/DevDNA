@@ -33,7 +33,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-950 to-indigo-950 px-6 text-white">
-      <p className="text-sm tracking-[0.3em] text-indigo-300">DEV WRAPPED</p>
+      <p className="text-sm tracking-[0.3em] text-indigo-300">DEV DNA</p>
       <h1 className="mt-4 max-w-xl text-center text-3xl font-bold sm:text-4xl">
         당신의 GitHub, 재미있게 분석해드립니다
       </h1>
