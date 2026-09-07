@@ -93,6 +93,11 @@ export default function ResultPage() {
   const typeScores: Record<string, number> = result.typeScores ? JSON.parse(result.typeScores) : {};
   const sortedTypeScores = Object.entries(typeScores).sort((a, b) => b[1] - a[1]);
 
+  const pageUrl = `${window.location.origin}/dev/${result.githubUsername}`;
+  const shareText = `나는 ${meta.emoji} ${meta.label}! "${meta.tagline}" - DevWrapped로 내 GitHub 분석해보기`;
+  const xShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`;
+  const threadsShareUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(`${shareText} ${pageUrl}`)}`;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-indigo-950 px-6 py-16 text-white">
       <div className="mx-auto max-w-2xl">
@@ -166,6 +171,24 @@ export default function ResultPage() {
           >
             공유 카드 보기
           </a>
+          <div className="flex gap-3">
+            <a
+              href={xShareUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg bg-slate-900/60 px-5 py-2 text-sm font-semibold hover:bg-slate-800"
+            >
+              X에 공유하기
+            </a>
+            <a
+              href={threadsShareUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg bg-slate-900/60 px-5 py-2 text-sm font-semibold hover:bg-slate-800"
+            >
+              Threads에 공유하기
+            </a>
+          </div>
         </div>
       </div>
     </div>
