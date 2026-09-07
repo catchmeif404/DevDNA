@@ -1,12 +1,12 @@
 package dev.devwrapped.backend.analysis;
 
-import jakarta.validation.Valid;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,9 +23,11 @@ public class AnalysisController {
         this.queuePublisher = queuePublisher;
     }
 
+    /** Always analyzes the caller's own GitHub account — SecurityConfig requires authentication here. */
     @PostMapping("/api/analyses")
-    public ResponseEntity<?> create(@Valid @RequestBody CreateAnalysisRequest request) {
-        AnalysisJob job = new AnalysisJob(request.githubUsername());
+    public ResponseEntity<?> create(@AuthenticationPrincipal OAuth2User principal) {
+        String githubUsername = principal.getAttribute("login");
+        AnalysisJob job = new AnalysisJob(githubUsername);
         job = jobRepository.save(job);
         queuePublisher.enqueue(job.getId());
         return ResponseEntity.ok(Map.of("jobId", job.getId(), "status", job.getStatus()));

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -25,7 +26,10 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/**", "/api/analyses", "/api/analyses/**", "/api/share/**",
+                        // POST /api/analyses creates a job for the caller's own account (AnalysisController)
+                        // and must come before the broader /api/analyses/** permitAll below.
+                        .requestMatchers(HttpMethod.POST, "/api/analyses").authenticated()
+                        .requestMatchers("/actuator/**", "/api/analyses/**", "/api/share/**",
                                 "/api/users/*/result", "/api/auth/**", "/oauth2/**", "/login/**")
                         .permitAll()
                         .anyRequest().authenticated())
