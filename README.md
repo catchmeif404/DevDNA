@@ -40,13 +40,16 @@ curl http://localhost:8081/actuator/health
 
 ## README 배지
 
-분석 결과를 자신의 GitHub 프로필/레포 README에 뱃지로 붙일 수 있다:
+분석 결과를 자신의 GitHub 프로필(`{username}/{username}` 레포)이나 다른 레포의 README에 뱃지로 박아넣을 수 있다. DevWrapped가 자동으로 뭔가를 해주는 게 아니라, **본인이 직접 아래 마크다운 한 줄을 자기 README.md에 추가하고 커밋·푸시**하면 된다 — GitHub이 README를 보여줄 때마다 이 URL로 이미지를 다시 요청해서 항상 최신 상태로 그려진다.
 
 ```markdown
-![DevWrapped](http://localhost:8090/api/badge/{username}.svg)
+![DevWrapped](https://<배포한-도메인>/api/badge/{username}.svg)
 ```
 
-아직 분석한 적 없는 username이면 "no data yet" 회색 뱃지가 뜬다 (깨진 이미지 대신).
+- `{username}` 자리에 본인 GitHub username을 넣는다.
+- **먼저 그 계정으로 한 번 분석을 돌려놔야 한다** (사이트에서 로그인 → 자동 분석). 분석 이력이 없으면 회색 "no data yet" 뱃지가 뜬다 (깨진 이미지 대신).
+- 개발자 유형마다 뱃지 색이 다르다 (예: NIGHT OWL은 보라, BUG SLAYER는 빨강, DOCUMENTARIAN은 주황) — 유형이 바뀌면 뱃지 색도 자동으로 바뀐다.
+- 로컬 개발 중에는 `https://<배포한-도메인>` 대신 `http://localhost:8090`을 써서 로컬에서만 미리 볼 수 있다 (`http://localhost:8090/api/badge/{username}.svg`). GitHub 자체에 실제로 보이게 하려면 backend를 공개 도메인에 배포해야 한다 — 아직 배포 전이라 지금은 로컬 미리보기만 가능하다.
 
 ## 알려진 제약 (MVP 현재 범위)
 

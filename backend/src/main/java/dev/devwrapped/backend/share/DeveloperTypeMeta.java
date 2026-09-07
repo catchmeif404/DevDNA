@@ -41,6 +41,19 @@ final class DeveloperTypeMeta {
             Map.entry("EXPLORER", "여러 저장소를 넘나드는 개발자"),
             Map.entry("COLLABORATOR", "협업으로 성장하는 개발자"));
 
+    /** One signature accent color per type so badges/cards read as distinct "collectibles", not one generic look. */
+    private static final Map<String, String> COLOR = Map.ofEntries(
+            Map.entry("NIGHT_OWL", "#4f46e5"),
+            Map.entry("BUG_SLAYER", "#dc2626"),
+            Map.entry("BUILDER", "#16a34a"),
+            Map.entry("POLYGLOT", "#0891b2"),
+            Map.entry("WEEKEND_WARRIOR", "#db2777"),
+            Map.entry("REFACTOR_MASTER", "#0d9488"),
+            Map.entry("DOCUMENTARIAN", "#d97706"),
+            Map.entry("TESTER", "#9333ea"),
+            Map.entry("EXPLORER", "#2563eb"),
+            Map.entry("COLLABORATOR", "#ea580c"));
+
     private DeveloperTypeMeta() {
     }
 
@@ -54,5 +67,9 @@ final class DeveloperTypeMeta {
 
     static String tagline(String type) {
         return TAGLINE.getOrDefault(type, "고유한 개발 스타일을 가진 개발자");
+    }
+
+    static String color(String type) {
+        return COLOR.getOrDefault(type, "#6366f1");
     }
 }
