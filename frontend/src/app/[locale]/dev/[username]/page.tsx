@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { useParams, useSearchParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
 import {
   type AnalysisResult,
   type JobStatus,
@@ -12,20 +13,24 @@ import {
   getLatestResultByUsername,
   shareCardUrl,
 } from "@/lib/api";
-import { developerTypeMeta, weekdayLabel } from "@/lib/developerType";
-
-const STATUS_LABEL: Record<string, string> = {
-  PENDING: "대기 중",
-  COLLECTING: "GitHub 데이터 수집 중",
-  ANALYZING: "분석 중",
-  COMPLETED: "완료",
-  FAILED: "실패",
-};
+import { developerTypeMeta, type DeveloperTypeLocale } from "@/lib/developerType";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function ResultPage() {
   const params = useParams<{ username: string }>();
   const searchParams = useSearchParams();
   const jobId = searchParams.get("job");
+  const locale = useLocale() as DeveloperTypeLocale;
+  const t = useTranslations("result");
+  const tWeekday = useTranslations("weekday");
+
+  const STATUS_LABEL: Record<string, string> = {
+    PENDING: t("statusPending"),
+    COLLECTING: t("statusCollecting"),
+    ANALYZING: t("statusAnalyzing"),
+    COMPLETED: t("statusCompleted"),
+    FAILED: t("statusFailed"),
+  };
 
   const [job, setJob] = useState<JobStatus | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -41,7 +46,7 @@ export default function ResultPage() {
         const data = await getLatestResultByUsername(params.username);
         if (!cancelled) setResult(data);
       } catch {
-        if (!cancelled) setError("아직 분석 결과가 없습니다. 홈에서 먼저 분석을 요청해주세요.");
+        if (!cancelled) setError(t("errorNoResult"));
       }
     }
 
@@ -58,12 +63,12 @@ export default function ResultPage() {
           const data = await getJobResult(Number(jobId));
           if (!cancelled) setResult(data);
         } else if (status.status === "FAILED") {
-          setError(status.errorMessage || "분석에 실패했습니다.");
+          setError(status.errorMessage || t("errorAnalysisFailed"));
         } else {
           timer = setTimeout(poll, 2000);
         }
       } catch {
-        if (!cancelled) setError("분석 상태를 불러오지 못했습니다.");
+        if (!cancelled) setError(t("errorStatusFetchFailed"));
       }
     }
 
@@ -72,24 +77,25 @@ export default function ResultPage() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [jobId, params.username]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId, params.username, locale]);
 
   if (error) {
-    return <StatusScreen title="문제가 발생했어요" message={error} />;
+    return <StatusScreen title={t("errorTitle")} message={error} />;
   }
 
   if (!result) {
     const status = job?.status ?? "PENDING";
     return (
       <StatusScreen
-        title={STATUS_LABEL[status] ?? "분석 중"}
-        message={`${params.username}님의 GitHub 활동을 살펴보고 있어요...`}
+        title={STATUS_LABEL[status] ?? t("statusAnalyzing")}
+        message={t("analyzingMessage", { username: params.username })}
         progress={job?.progress ?? 0}
       />
     );
   }
 
-  const meta = developerTypeMeta(result.developerType);
+  const meta = developerTypeMeta(result.developerType, locale);
   const languageRatios: Record<string, number> = result.languageRatios
     ? JSON.parse(result.languageRatios)
     : {};
@@ -97,7 +103,7 @@ export default function ResultPage() {
   const sortedTypeScores = Object.entries(typeScores).sort((a, b) => b[1] - a[1]);
 
   const pageUrl = `${window.location.origin}/dev/${result.githubUsername}`;
-  const shareText = `나는 ${meta.emoji} ${meta.label}! "${meta.tagline}" - DevDNA로 내 GitHub 분석해보기`;
+  const shareText = `${meta.emoji} ${meta.label}! "${meta.tagline}" - DevDNA`;
   const xShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`;
   const threadsShareUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(`${shareText} ${pageUrl}`)}`;
   const badgeMarkdown = `[![DevDNA](${badgeUrl(result.githubUsername)})](${pageUrl})`;
@@ -111,14 +117,17 @@ export default function ResultPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-indigo-950 px-6 py-16 text-white">
       <div className="mx-auto max-w-2xl">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1 text-sm text-slate-400 transition hover:text-white"
-        >
-          ← 메인으로
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 text-sm text-slate-400 transition hover:text-white"
+          >
+            ← {t("backToMain")}
+          </Link>
+          <LanguageSwitcher />
+        </div>
         <p className="mt-6 text-center text-sm tracking-[0.3em] text-indigo-300">DEV DNA</p>
-        <p className="mt-2 text-center text-slate-400">{result.githubUsername}님의 개발자 유형</p>
+        <p className="mt-2 text-center text-slate-400">{t("yourType", { username: result.githubUsername })}</p>
         <div className="mt-6 text-center text-7xl">{meta.emoji}</div>
         <h1 className="mt-2 text-center text-4xl font-bold">{meta.label}</h1>
         <p className="mt-2 text-center text-slate-300">&ldquo;{meta.tagline}&rdquo;</p>
@@ -136,7 +145,7 @@ export default function ResultPage() {
         </div>
 
         <div className="mt-6 text-center text-sm text-slate-400">
-          가장 활발한 요일: {weekdayLabel(result.peakWeekday)}요일
+          {t("mostActiveDay", { day: tWeekday(String(result.peakWeekday)) })}
         </div>
 
         <div className="mt-10 flex flex-col items-center gap-2">
@@ -146,7 +155,7 @@ export default function ResultPage() {
             onClick={copyBadgeMarkdown}
             className="rounded-lg bg-slate-900/60 px-5 py-2 text-sm font-semibold hover:bg-slate-800"
           >
-            {badgeCopied ? "복사됨!" : "README 뱃지 마크다운 복사"}
+            {badgeCopied ? t("copyBadgeCopied") : t("copyBadge")}
           </button>
         </div>
 
@@ -156,7 +165,7 @@ export default function ResultPage() {
           </h2>
           <div className="space-y-4">
             {sortedTypeScores.map(([type, score]) => {
-              const typeMeta = developerTypeMeta(type);
+              const typeMeta = developerTypeMeta(type, locale);
               return (
                 <ScoreBar
                   key={type}
@@ -187,7 +196,10 @@ export default function ResultPage() {
           </div>
         )}
 
-        {result.aiSummary && (
+        {/* aiSummary is a Korean-only rule-based template (backend SummaryGenerator) -- showing
+            it under an English UI would read as broken, so it's ko-only until the backend can
+            produce a localized version. */}
+        {locale === "ko" && result.aiSummary && (
           <p className="mt-10 rounded-lg bg-slate-900/60 p-4 text-center text-slate-200">
             {result.aiSummary}
           </p>
@@ -205,7 +217,7 @@ export default function ResultPage() {
             rel="noopener noreferrer"
             className="rounded-lg bg-indigo-500 px-5 py-2 font-semibold hover:bg-indigo-400"
           >
-            공유 카드 보기
+            {t("viewShareCard")}
           </a>
           <div className="flex gap-3">
             <a
@@ -214,7 +226,7 @@ export default function ResultPage() {
               rel="noopener noreferrer"
               className="rounded-lg bg-slate-900/60 px-5 py-2 text-sm font-semibold hover:bg-slate-800"
             >
-              X에 공유하기
+              {t("shareOnX")}
             </a>
             <a
               href={threadsShareUrl}
@@ -222,7 +234,7 @@ export default function ResultPage() {
               rel="noopener noreferrer"
               className="rounded-lg bg-slate-900/60 px-5 py-2 text-sm font-semibold hover:bg-slate-800"
             >
-              Threads에 공유하기
+              {t("shareOnThreads")}
             </a>
           </div>
 
@@ -230,7 +242,7 @@ export default function ResultPage() {
             href="/"
             className="mt-6 rounded-lg border border-slate-700 px-5 py-2 text-sm font-semibold text-slate-300 transition hover:border-slate-500 hover:text-white"
           >
-            메인으로 돌아가기
+            {t("backToMainButton")}
           </Link>
         </div>
       </div>

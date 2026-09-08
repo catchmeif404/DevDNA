@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "title": "DevDNA",
+    "description": "See your developer DNA from your public GitHub activity"
+  },
+  "common": {
+    "language": "Language"
+  },
+  "home": {
+    "title": "Your GitHub, analyzed for fun",
+    "subtitle": "We analyze your public GitHub activity to tell you what kind of developer you are.",
+    "welcomeBack": "Welcome, {name}",
+    "reanalyzing": "Requesting analysis...",
+    "reanalyzeButton": "Re-analyze my GitHub",
+    "viewLatestResult": "View latest result",
+    "logout": "Log out",
+    "loginButton": "Log in with GitHub",
+    "loginHint": "Logging in with GitHub automatically analyzes your public activity and shows you the result."
+  },
+  "result": {
+    "backToMain": "Home",
+    "backToMainButton": "Back to home",
+    "yourType": "{username}'s developer type",
+    "mostActiveDay": "Most active day: {day}",
+    "copyBadge": "Copy README badge markdown",
+    "copyBadgeCopied": "Copied!",
+    "viewShareCard": "View share card",
+    "shareOnX": "Share on X",
+    "shareOnThreads": "Share on Threads",
+    "errorTitle": "Something went wrong",
+    "errorNoResult": "No analysis result yet. Request one from the home page first.",
+    "errorStatusFetchFailed": "Couldn't load the analysis status.",
+    "errorAnalysisFailed": "Analysis failed.",
+    "analyzingMessage": "Looking at {username}'s GitHub activity...",
+    "statusPending": "Pending",
+    "statusCollecting": "Collecting GitHub data",
+    "statusAnalyzing": "Analyzing",
+    "statusCompleted": "Completed",
+    "statusFailed": "Failed"
+  },
+  "weekday": {
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday",
+    "7": "Sunday"
+  }
+}
