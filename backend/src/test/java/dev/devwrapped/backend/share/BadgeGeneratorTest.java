@@ -4,69 +4,65 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.devwrapped.backend.analysis.AnalysisResult;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class BadgeGeneratorTest {
-
     private final BadgeGenerator generator = new BadgeGenerator();
 
-    @Test
-    void rendersAnimatedAnimalBadgeWithoutEmoji() {
-        AnalysisResult result = new AnalysisResult();
-        result.setDeveloperType("BUG_SLAYER");
-        result.setTotalCommits(1842);
-        result.setTopLanguage("Java");
+    @ParameterizedTest
+    @CsvSource({
+            "NIGHT_OWL, AFTER-HOURS OPERATOR", "BUG_SLAYER, BUG HUNTER", "BUILDER, SERIAL BUILDER",
+            "POLYGLOT, MULTILINGUAL OPERATOR", "WEEKEND_WARRIOR, WEEKEND OPERATIVE",
+            "REFACTOR_MASTER, CODE RESTORER", "DOCUMENTARIAN, ARCHIVIST", "TESTER, QUALITY INSPECTOR",
+            "EXPLORER, REPO EXPLORER", "COLLABORATOR, COLLABORATOR"
+    })
+    void rendersEveryTypeAsValidStaticEvidence(String type, String label) throws Exception {
+        AnalysisResult result = ShareSvgTestSupport.result();
+        result.setDeveloperType(type);
+        String badge = generator.generateForResult(result, null);
+        String card = new ShareCardGenerator().generate(result);
 
-        String svg = generator.generateForResult(result, null);
+        for (String svg : new String[] {badge, card}) {
+            var document = ShareSvgTestSupport.parse(svg);
+            assertThat(document.getDocumentElement().getTextContent()).contains(label, "@example-dev", "REVIEWED");
+            assertThat(svg).contains("#e8dcc3", "#f1e9d2", "#241f1a", "#a32b2b", "Courier Prime", "Courier New");
+            assertThat(svg).doesNotContain("<animate", "Gradient", "<script", "<image", "<foreignObject", "SAMPLE");
+            assertThat(document.getElementsByTagName("path").getLength()).isGreaterThan(5);
+            ShareSvgTestSupport.assertTextWithinPage(document);
+        }
+        assertThat(badge).contains("1,842 commits / 24 repos / 89 PRs", "LANGUAGE: Java");
+    }
 
-        assertThat(svg).contains("aria-label=\"DevDNA: DEBUG CAT");
-        assertThat(svg).contains("<animate ");
-        assertThat(svg).contains("DEVDNA");
-        assertThat(svg).contains("DEBUG CAT");
-        assertThat(svg).contains("Bug-hunting Java mode");
-        assertThat(svg).contains("1.8k commits");
-        assertThat(svg).contains("#dc2626");
-        assertThat(svg).contains("rotate");
-        assertThat(svg).doesNotContain("🔥");
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3, Integer.MAX_VALUE})
+    void founderDistinctionIsVisibleAndAccessible(int rank) throws Exception {
+        var document = ShareSvgTestSupport.parse(generator.generateForResult(ShareSvgTestSupport.result(), rank));
+        assertThat(document.getDocumentElement().getAttribute("aria-label")).contains("Founding member #" + rank);
+        assertThat(document.getElementsByTagName("text").item(
+                document.getElementsByTagName("text").getLength() - 1).getTextContent())
+                .isEqualTo("Founding member #" + rank);
+        ShareSvgTestSupport.assertTextWithinPage(document);
     }
 
     @Test
-    void rendersAnimatedNoDataBadge() {
+    void omitsFounderDistinctionWhenAbsentOrInvalid() throws Exception {
+        for (Integer rank : new Integer[] {null, 0, -1}) {
+            String svg = generator.generateForResult(ShareSvgTestSupport.result(), rank);
+            ShareSvgTestSupport.parse(svg);
+            assertThat(svg).doesNotContain("Founding member");
+        }
+    }
+
+    @Test
+    void noDataHasAnExplicitPendingState() throws Exception {
         String svg = generator.generateNoData();
-
-        assertThat(svg).contains("aria-label=\"DevDNA: no data yet");
-        assertThat(svg).contains("<animate ");
-        assertThat(svg).contains("no data yet");
-        assertThat(svg).contains("#6b7280");
-    }
-
-    @Test
-    void rendersCustomPenguinMascotForCollaborator() {
-        AnalysisResult result = new AnalysisResult();
-        result.setDeveloperType("COLLABORATOR");
-        result.setTotalCommits(320);
-        result.setTotalPullRequests(89);
-        result.setTopLanguage("Scala");
-
-        String svg = generator.generateForResult(result, null);
-
-        assertThat(svg).contains("TEAM PENGUIN");
-        assertThat(svg).contains("Team-powered maker");
-        assertThat(svg).contains("89 PRs");
-        assertThat(svg).contains("#fb7185");
-        assertThat(svg).contains("type=\"scale\"");
-    }
-
-    @Test
-    void rendersFounderRibbonWhenRankGiven() {
-        AnalysisResult result = new AnalysisResult();
-        result.setDeveloperType("BUILDER");
-        result.setTotalCommits(500);
-        result.setTopLanguage("Go");
-
-        String withFounder = generator.generateForResult(result, 2);
-        String withoutFounder = generator.generateForResult(result, null);
-
-        assertThat(withFounder).contains("Founding member #2");
-        assertThat(withoutFounder).doesNotContain("Founding member");
+        var document = ShareSvgTestSupport.parse(svg);
+        assertThat(document.getDocumentElement().getTextContent())
+                .contains("AWAITING EVIDENCE", "PENDING", "no data yet", "No public analysis on file.");
+        assertThat(svg).doesNotContain("REVIEWED", "Founding member", "<animate");
+        assertThat(generator.generateForResult(null, 2)).isEqualTo(svg);
+        ShareSvgTestSupport.assertTextWithinPage(document);
     }
 }

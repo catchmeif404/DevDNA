@@ -1,88 +1,83 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ArrowRight, FileSearch, FolderOpen, LogOut, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { getMe, githubLoginUrl, logout, startMyAnalysis, type Me } from "@/lib/api";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import CaseFile from "@/components/CaseFile";
 
 export default function Home() {
   const router = useRouter();
   const t = useTranslations("home");
   const [me, setMe] = useState<Me | null | undefined>(undefined);
-  const [starting, setStarting] = useState(false);
+  const [busy, setBusy] = useState<"analysis" | "logout" | null>(null);
+  const [error, setError] = useState<"analysisError" | "logoutError" | null>(null);
 
   useEffect(() => {
-    getMe()
-      .then(setMe)
-      .catch(() => setMe(null));
+    let active = true;
+    getMe().then((user) => { if (active) setMe(user); }).catch(() => { if (active) setMe(null); });
+    return () => { active = false; };
   }, []);
 
-  async function handleLogout() {
-    await logout();
-    setMe(null);
-  }
-
-  async function handleReanalyze() {
-    if (!me) return;
-    setStarting(true);
+  async function handleAction(action: "analysis" | "logout") {
+    if (!me || busy) return;
+    setBusy(action);
+    setError(null);
     try {
-      const { jobId } = await startMyAnalysis();
-      router.push(`/dev/${me.githubLogin}?job=${jobId}`);
-    } catch {
-      setStarting(false);
-    }
+      if (action === "logout") { await logout(); setMe(null); }
+      else {
+        const { jobId } = await startMyAnalysis();
+        router.push(`/dev/${me.githubLogin}?job=${jobId}`);
+      }
+    } catch { setError(action === "analysis" ? "analysisError" : "logoutError"); }
+    finally { setBusy(null); }
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-950 to-indigo-950 px-6 text-white">
-      <div className="absolute right-6 top-6">
-        <LanguageSwitcher />
-      </div>
-
-      <p className="text-sm tracking-[0.3em] text-indigo-300">DEV DNA</p>
-      <h1 className="mt-4 max-w-xl text-center text-3xl font-bold sm:text-4xl">{t("title")}</h1>
-      <p className="mt-3 max-w-md text-center text-slate-400">{t("subtitle")}</p>
-
-      {me === undefined ? null : me ? (
-        <div className="mt-10 flex w-full max-w-sm flex-col items-center gap-4">
-          <div className="flex items-center gap-3">
-            {me.avatarUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={me.avatarUrl} alt={me.githubLogin} className="h-10 w-10 rounded-full" />
-            )}
-            <span className="font-semibold">{t("welcomeBack", { name: me.githubLogin })}</span>
-          </div>
-          <button
-            onClick={handleReanalyze}
-            disabled={starting}
-            className="w-full rounded-lg bg-indigo-500 px-4 py-3 font-semibold transition hover:bg-indigo-400 disabled:opacity-50"
-          >
-            {starting ? t("reanalyzing") : t("reanalyzeButton")}
-          </button>
-          <Link
-            href={`/dev/${me.githubLogin}`}
-            className="text-sm text-slate-400 underline underline-offset-4 hover:text-slate-200"
-          >
-            {t("viewLatestResult")}
-          </Link>
-          <button onClick={handleLogout} className="text-sm text-slate-500 hover:text-slate-300">
-            {t("logout")}
-          </button>
+    <CaseFile>
+      <section className="file-cover" aria-labelledby="product-title">
+        <div className="section-kicker"><span>{t("exhibit")}</span><span className="case-state">{t("open")}</span></div>
+        <h1 id="product-title" className="product-title">DevDNA<span className="title-period">.</span></h1>
+        <p className="cover-subtitle">{t("title")}</p>
+        <p className="cover-copy">{t("subtitle")}</p>
+        <div className="subject-record">
+          <span className="field-label">{t("subject")}</span>
+          {me ? <strong className="subject-name">@{me.githubLogin}</strong> :
+            <span className="redacted-subject" aria-label={t("unidentified")}><span /><span /></span>}
+          <span className="stamp">{t(me ? "identified" : "unidentified")}</span>
         </div>
-      ) : (
-        <a
-          href={githubLoginUrl()}
-          className="mt-10 flex w-full max-w-sm items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 font-semibold text-slate-900 transition hover:bg-slate-200"
-        >
-          <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
-          </svg>
-          {t("loginButton")}
-        </a>
-      )}
-
-      <p className="mt-6 max-w-sm text-center text-xs text-slate-500">{t("loginHint")}</p>
-    </div>
+        <div className="intake-actions">
+          {me === undefined ? <p className="session-pending" role="status"><FileSearch size={18} aria-hidden="true" /> {t("checkingSession")}</p>
+            : me ? <>
+              <button className="button button-primary" onClick={() => handleAction("analysis")} disabled={busy !== null}>
+                <RefreshCw size={18} className={busy === "analysis" ? "spin" : ""} aria-hidden="true" />
+                {t(busy === "analysis" ? "reanalyzing" : "reanalyzeButton")}
+              </button>
+              <Link href={`/dev/${me.githubLogin}`} className="inline-link">{t("viewLatestResult")} <ArrowRight size={17} aria-hidden="true" /></Link>
+              <button className="icon-button" title={t("logout")} aria-label={t("logout")} disabled={busy !== null} onClick={() => handleAction("logout")}><LogOut size={18} /></button>
+            </> : <a href={githubLoginUrl()} className="button button-primary"><FolderOpen size={19} aria-hidden="true" />{t("loginButton")}<ArrowRight size={18} aria-hidden="true" /></a>}
+        </div>
+        {error && <p className="error-note" role="alert">{t(error)}</p>}
+        <p className="intake-note">{t("loginHint")}</p>
+      </section>
+      <section className="file-section" aria-labelledby="evidence-title">
+        <div className="section-heading"><h2 id="evidence-title">{t("evidenceTitle")}</h2><span>01 / 02</span></div>
+        <dl className="evidence-index">
+          <div><dt>01 / {t("commits")}</dt><dd>{t("commitsNote")}</dd></div>
+          <div><dt>02 / {t("repos")}</dt><dd>{t("reposNote")}</dd></div>
+          <div><dt>03 / {t("prs")}</dt><dd>{t("prsNote")}</dd></div>
+        </dl>
+      </section>
+      <section className="file-section" aria-labelledby="sample-title">
+        <div className="section-heading"><h2 id="sample-title">{t("sampleTitle")}</h2><span>02 / 02</span></div>
+        <figure className="sample-evidence">
+          {/* This SVG comes from the same backend renderer as public README badges. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/sample-badge.svg" alt={t("sampleAlt")} width={600} height={200} />
+          <figcaption>{t("sampleCaption")}</figcaption>
+        </figure>
+      </section>
+    </CaseFile>
   );
 }

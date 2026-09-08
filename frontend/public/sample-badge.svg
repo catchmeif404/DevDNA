@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="200" viewBox="0 0 600 200"
+     role="img" aria-label="DevDNA: SAMPLE / @example-dev / BUG HUNTER / Founding member #2" font-family="'Courier Prime', 'Courier New', monospace"
+     fill="#241f1a" letter-spacing="0">
+  <title>DevDNA: SAMPLE / @example-dev / BUG HUNTER / Founding member #2</title>
+  <rect x="0.5" y="0.5" width="599" height="199" fill="#f1e9d2" stroke="#241f1a"/>
+  <rect x="1" y="1" width="598" height="40" fill="#e8dcc3"/>
+  <path d="M16 42 H584 M116 54 V152 M16 162 H584" fill="none" stroke="#241f1a" stroke-opacity="0.35"/>
+<text x="18" y="27" font-size="16.00" textLength="224.48" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">DEVDNA / EVIDENCE LABEL</text>
+<text x="455" y="27" font-size="13.00" textLength="47.58" lengthAdjust="spacingAndGlyphs" fill="#a32b2b" stroke="none">SAMPLE</text>
+<g transform="translate(22 56) scale(0.42)" fill="none" stroke="#241f1a"
+   stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+  <path d="M12 92 C12 8 176 4 178 94 C180 143 159 179 144 201"/>
+  <path d="M22 103 C12 28 156 4 167 85 C176 140 149 183 135 201"/>
+  <path d="M25 126 C48 110 13 68 62 40 C104 15 151 43 155 87 C160 140 138 175 123 196"/>
+  <path d="M19 150 C65 122 28 84 68 54 C98 32 137 53 143 88 C151 143 119 181 113 192"/>
+  <path d="M28 163 C81 125 41 86 78 65 C104 50 127 66 132 94 C140 137 114 169 102 189"/>
+  <path d="M40 177 C92 133 58 102 84 79 C103 62 122 87 120 111 C118 145 99 167 90 184"/>
+  <path d="M54 187 C106 137 73 112 92 93 C108 78 117 119 96 149"/>
+  <path d="M71 194 C80 180 91 168 96 158 M94 108 C99 127 87 146 75 160"/>
+  <path d="M3 24 V3 H24 M164 3 H187 V24 M3 180 V208 H24 M164 208 H187 V180"
+        stroke-opacity="0.45" stroke-width="1"/>
+</g>
+<text x="130" y="65" font-size="10.00" textLength="85.40" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">SAMPLE SUBJECT</text>
+<text x="130" y="86" font-size="16.00" textLength="117.12" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">@example-dev</text>
+<text x="130" y="105" font-size="10.00" textLength="24.40" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">TYPE</text>
+<text x="130" y="127" font-size="19.00" textLength="115.90" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">BUG HUNTER</text>
+<text x="130" y="149" font-size="12.00" textLength="241.56" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">1,842 commits / 24 repos / 89 PRs</text>
+<text x="18" y="182" font-size="11.00" textLength="93.94" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">LANGUAGE: Java</text>
+<text x="326" y="182" font-size="11.00" textLength="120.78" lengthAdjust="spacingAndGlyphs" fill="#a32b2b" stroke="none">Founding member #2</text>
+</svg>

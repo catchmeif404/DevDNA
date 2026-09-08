@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:ui": "node scripts/verify-case-file.mjs",
     "dev:vinext": "vinext dev --port 3011",
     "build:vinext": "vinext build",
     "start:vinext": "wrangler dev --config dist/server/wrangler.json",
@@ -14,6 +15,7 @@
   },
   "dependencies": {
     "@vinext/cloudflare": "^1.0.0-beta.7",
+    "lucide-react": "^1.43.0",
     "next": "16.3.4",
     "next-intl": "^4.14.2",
     "react": "19.2.8",
@@ -31,6 +33,7 @@
     "@vitejs/plugin-rsc": "^0.5.34",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "playwright": "^1.63.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite": "^8.2.2",

@@ -1,312 +1,227 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowUpRight, Check, Copy, FileSearch, FileText, Fingerprint, RefreshCw, Tag } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useParams, useSearchParams } from "next/navigation";
-import { Link } from "@/i18n/navigation";
+import { Link, getPathname } from "@/i18n/navigation";
 import {
-  type AnalysisResult,
-  type JobStatus,
-  badgeUrl,
-  getJobResult,
-  getJobStatus,
-  getLatestResultByUsername,
-  shareCardUrl,
+  type AnalysisResult, type JobStatus, badgeUrl, getJobResult, getJobStatus,
+  getLatestResultByUsername, shareCardUrl,
 } from "@/lib/api";
 import { developerTypeMeta, type DeveloperTypeLocale } from "@/lib/developerType";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import CaseFile from "@/components/CaseFile";
+
+type ErrorKey = "errorNoResult" | "errorStatusFetchFailed" | "errorAnalysisFailed" | "errorInvalidJob";
 
 export default function ResultPage() {
-  const params = useParams<{ username: string }>();
-  const searchParams = useSearchParams();
-  const jobId = searchParams.get("job");
-  const locale = useLocale() as DeveloperTypeLocale;
+  const { username } = useParams<{ username: string }>();
+  const jobId = useSearchParams().get("job");
+  return <ResultLoader key={`${username}:${jobId}`} username={username} jobId={jobId} />;
+}
+
+function ResultLoader({ username, jobId }: { username: string; jobId: string | null }) {
   const t = useTranslations("result");
-  const tWeekday = useTranslations("weekday");
-
-  const STATUS_LABEL: Record<string, string> = {
-    PENDING: t("statusPending"),
-    COLLECTING: t("statusCollecting"),
-    ANALYZING: t("statusAnalyzing"),
-    COMPLETED: t("statusCompleted"),
-    FAILED: t("statusFailed"),
-  };
-
   const [job, setJob] = useState<JobStatus | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [badgeCopied, setBadgeCopied] = useState(false);
+  const [error, setError] = useState<ErrorKey | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
-
-    async function loadDirect() {
-      try {
-        const data = await getLatestResultByUsername(params.username);
-        if (!cancelled) setResult(data);
-      } catch {
-        if (!cancelled) setError(t("errorNoResult"));
-      }
-    }
-
     async function poll() {
-      if (!jobId) {
-        await loadDirect();
-        return;
-      }
       try {
-        const status = await getJobStatus(Number(jobId));
+        if (jobId === null) {
+          const data = await getLatestResultByUsername(username);
+          if (!cancelled) setResult(data);
+          return;
+        }
+        const id = Number(jobId);
+        if (!/^\d+$/.test(jobId) || !Number.isSafeInteger(id) || id < 1) {
+          if (!cancelled) setError("errorInvalidJob");
+          return;
+        }
+        const status = await getJobStatus(id);
         if (cancelled) return;
         setJob(status);
         if (status.status === "COMPLETED") {
-          const data = await getJobResult(Number(jobId));
+          const data = await getJobResult(id);
           if (!cancelled) setResult(data);
         } else if (status.status === "FAILED") {
-          setError(status.errorMessage || t("errorAnalysisFailed"));
+          setError("errorAnalysisFailed");
         } else {
           timer = setTimeout(poll, 2000);
         }
       } catch {
-        if (!cancelled) setError(t("errorStatusFetchFailed"));
+        if (!cancelled) setError(jobId === null ? "errorNoResult" : "errorStatusFetchFailed");
       }
     }
+    void poll();
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [jobId, username, attempt]);
 
-    poll();
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jobId, params.username, locale]);
+  if (result) return <Report result={result} />;
+  const statusKeys = {
+    PENDING: "statusPending", COLLECTING: "statusCollecting", ANALYZING: "statusAnalyzing",
+    COMPLETED: "statusCompleted", FAILED: "statusFailed",
+  } as const;
+  const progress = Math.min(100, Math.max(0, job?.progress ?? 0));
+  return (
+    <CaseFile result>
+      <section className="status-body" aria-live="polite">
+        <FileSearch size={42} strokeWidth={1.2} className="status-icon" aria-hidden="true" />
+        <div className="section-kicker">DEVDNA / {t("classification")}</div>
+        <h1>{error ? t("errorTitle") : t(statusKeys[job?.status ?? "PENDING"])}</h1>
+        <p>{error ? t(error) : t("analyzingMessage", { username })}</p>
+        {!error && <>
+          <div className="progress-label"><label htmlFor="analysis-progress">{t("progress")}</label><span>{progress}%</span></div>
+          <progress id="analysis-progress" max={100} value={progress} />
+        </>}
+        <div className="action-row">
+          {error && <button className="button" onClick={() => { setError(null); setJob(null); setAttempt((v) => v + 1); }}><RefreshCw size={16} aria-hidden="true" />{t("retry")}</button>}
+          <Link href="/" className="inline-link"><ArrowLeft size={16} aria-hidden="true" />{t("backToMainButton")}</Link>
+        </div>
+      </section>
+    </CaseFile>
+  );
+}
 
-  if (error) {
-    return <StatusScreen title={t("errorTitle")} message={error} />;
-  }
+function numericEntries(value: string | null): [string, number][] {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return [];
+    return Object.entries(parsed).filter((entry): entry is [string, number] =>
+      typeof entry[1] === "number" && Number.isFinite(entry[1]) && entry[1] >= 0,
+    ).sort((a, b) => b[1] - a[1]);
+  } catch { return []; }
+}
 
-  if (!result) {
-    const status = job?.status ?? "PENDING";
-    return (
-      <StatusScreen
-        title={STATUS_LABEL[status] ?? t("statusAnalyzing")}
-        message={t("analyzingMessage", { username: params.username })}
-        progress={job?.progress ?? 0}
-      />
-    );
-  }
-
+function Report({ result }: { result: AnalysisResult }) {
+  const locale = useLocale() as DeveloperTypeLocale;
+  const t = useTranslations("result");
+  const weekday = useTranslations("weekday");
   const meta = developerTypeMeta(result.developerType, locale);
-  const languageRatios: Record<string, number> = result.languageRatios
-    ? JSON.parse(result.languageRatios)
-    : {};
-  const typeScores: Record<string, number> = result.typeScores ? JSON.parse(result.typeScores) : {};
-  const sortedTypeScores = Object.entries(typeScores).sort((a, b) => b[1] - a[1]);
+  const scores = numericEntries(result.typeScores);
+  const languages = numericEntries(result.languageRatios);
+  const [artifact, setArtifact] = useState<"badge" | "card">("badge");
+  const [feedback, setFeedback] = useState<"copyBadgeCopied" | "copyFailed" | null>(null);
+  const [failedImage, setFailedImage] = useState<string | null>(null);
+  const imageUrl = artifact === "badge" ? badgeUrl(result.githubUsername) : shareCardUrl(result.githubUsername);
+  const resultPath = getPathname({ locale, href: `/dev/${result.githubUsername}` });
+  // Results load after hydration; keeping the fallback also makes rendering safe on the server.
+  const pageUrl = `${typeof window === "undefined" ? "" : window.location.origin}${resultPath}`;
+  const shareText = t("shareText", { type: meta.label, tagline: meta.tagline });
+  const shareQuery = new URLSearchParams({ text: shareText, url: pageUrl });
+  const threadsQuery = new URLSearchParams({ text: `${shareText} ${pageUrl}` });
+  const peakDay = result.peakWeekday >= 1 && result.peakWeekday <= 7
+    ? weekday(String(result.peakWeekday)) : t("unrecorded");
+  const number = (n: number) => n.toLocaleString(locale);
 
-  const pageUrl = `${window.location.origin}/dev/${result.githubUsername}`;
-  const shareText = `${meta.emoji} ${meta.label}! "${meta.tagline}" - DevDNA`;
-  const xShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`;
-  const threadsShareUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(`${shareText} ${pageUrl}`)}`;
-  const badgeMarkdown = `[![DevDNA](${badgeUrl(result.githubUsername)})](${pageUrl})`;
+  useEffect(() => {
+    if (!feedback) return;
+    const timer = setTimeout(() => setFeedback(null), 2500);
+    return () => clearTimeout(timer);
+  }, [feedback]);
 
-  async function copyBadgeMarkdown() {
-    await navigator.clipboard.writeText(badgeMarkdown);
-    setBadgeCopied(true);
-    setTimeout(() => setBadgeCopied(false), 2000);
+  async function copyArtifact() {
+    try {
+      await navigator.clipboard.writeText(artifact === "badge"
+        ? `[![DevDNA](${badgeUrl(result.githubUsername)})](${pageUrl})`
+        : pageUrl);
+      setFeedback("copyBadgeCopied");
+    } catch { setFeedback("copyFailed"); }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 to-indigo-950 px-6 py-16 text-white">
-      <div className="mx-auto max-w-2xl">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1 text-sm text-slate-400 transition hover:text-white"
-          >
-            ← {t("backToMain")}
-          </Link>
-          <LanguageSwitcher />
+    <CaseFile result>
+      <section className="result-cover" aria-labelledby="result-title">
+        <div className="section-kicker"><span>{t("report")}</span><span>{meta.code}</span></div>
+        <div className="result-identity">
+          <div><span className="field-label">{t("subject")}</span><strong className="subject-name">@{result.githubUsername}</strong></div>
+          <span className="stamp">{t("reviewed")}</span>
         </div>
-        <p className="mt-6 text-center text-sm tracking-[0.3em] text-indigo-300">DEV DNA</p>
-        <p className="mt-2 text-center text-slate-400">{t("yourType", { username: result.githubUsername })}</p>
-        <div className="mt-6 text-center text-7xl">{meta.emoji}</div>
-        <h1 className="mt-2 text-center text-4xl font-bold">{meta.label}</h1>
-        <p className="mt-2 text-center text-slate-300">&ldquo;{meta.tagline}&rdquo;</p>
-        <p className="mx-auto mt-2 max-w-md text-center text-sm text-slate-400">{meta.description}</p>
-
-        <div className="mt-10 grid grid-cols-3 gap-4 text-center">
-          <Stat label="Commits" value={result.totalCommits.toLocaleString()} />
-          <Stat label="Repositories" value={result.totalRepositories.toLocaleString()} />
-          <Stat label="Pull Requests" value={result.totalPullRequests.toLocaleString()} />
+        <Fingerprint size={48} strokeWidth={1.2} className="status-icon" aria-hidden="true" />
+        <p className="type-code">{t("classification")} / {meta.code}</p>
+        <h1 id="result-title" className="result-title">{meta.label}</h1>
+        <p className="result-tagline">{meta.tagline}</p>
+        <p className="result-description">{meta.description}</p>
+      </section>
+      <section className="file-section" aria-labelledby="stats-title">
+        <div className="section-heading"><h2 id="stats-title">{t("evidence")}</h2><span>01 / 03</span></div>
+        <dl className="stats-ledger">
+          <div><dt>{t("commits")}</dt><dd>{number(result.totalCommits)}</dd></div>
+          <div><dt>{t("repositories")}</dt><dd>{number(result.totalRepositories)}</dd></div>
+          <div><dt>{t("pullRequests")}</dt><dd>{number(result.totalPullRequests)}</dd></div>
+        </dl>
+        <dl className="detail-ledger">
+          <div><dt>{t("peakTime")}</dt><dd>{result.peakHour >= 0 && result.peakHour < 24 ? `${String(result.peakHour).padStart(2, "0")}:00` : t("unrecorded")}</dd></div>
+          <div><dt>{t("mainLanguage")}</dt><dd>{result.topLanguage ?? t("unrecorded")}</dd></div>
+          <div><dt>{t("mostActiveDay")}</dt><dd>{peakDay}</dd></div>
+        </dl>
+      </section>
+      <section className="file-section" aria-labelledby="patterns-title">
+        <div className="section-heading"><h2 id="patterns-title">{t("patterns")}</h2><span>02 / 03</span></div>
+        <p className="intake-note">{t("scoresNote")}</p>
+        {scores.length ? scores.map(([type, rawScore]) => {
+          const item = developerTypeMeta(type, locale);
+          const score = Math.min(100, rawScore);
+          return <div className="score-row" key={type}>
+            <div className="score-label"><strong>{item.label}</strong><span>{number(score)} / 100</span></div>
+            <div className="score-track" aria-hidden="true"><div style={{ width: `${score}%` }} /></div>
+            <p>{item.description}</p>
+          </div>;
+        }) : <p className="intake-note">{t("noScores")}</p>}
+        {languages.length > 0 && <div className="language-ledger" aria-label={t("languages")}>
+          {languages.map(([language, ratio]) => <span key={language}>{language}<strong>{Math.round(Math.min(1, ratio) * 100)}%</strong></span>)}
+        </div>}
+        {locale === "ko" && result.aiSummary && <aside className="investigator-note">
+          <h3>{t("summary")}</h3><p>{result.aiSummary}</p>
+        </aside>}
+      </section>
+      <section className="file-section" aria-labelledby="attachments-title">
+        <div className="section-heading"><h2 id="attachments-title">{t("attachments")}</h2><span>03 / 03</span></div>
+        <div className="artifact-tabs" role="tablist" aria-label={t("attachments")}>
+          {(["badge", "card"] as const).map((value) => <button key={value} id={`tab-${value}`}
+            role="tab" aria-selected={artifact === value} aria-controls="artifact-panel"
+            tabIndex={artifact === value ? 0 : -1}
+            onClick={() => { setArtifact(value); setFeedback(null); }}
+            onKeyDown={(event) => {
+              if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+                event.preventDefault();
+                const next = event.key === "Home" ? "badge" : event.key === "End" ? "card" : artifact === "badge" ? "card" : "badge";
+                setArtifact(next); setFeedback(null);
+                document.getElementById(`tab-${next}`)?.focus();
+              }
+            }}>
+            {value === "badge" ? <Tag size={16} aria-hidden="true" /> : <FileText size={16} aria-hidden="true" />}{t(value)}
+          </button>)}
         </div>
-
-        <div className="mt-6 grid grid-cols-2 gap-4 text-center">
-          <Stat label="Peak Coding Time" value={`${String(result.peakHour).padStart(2, "0")}:00`} />
-          <Stat label="Main Language" value={result.topLanguage ?? "N/A"} />
-        </div>
-
-        <div className="mt-6 text-center text-sm text-slate-400">
-          {t("mostActiveDay", { day: tWeekday(String(result.peakWeekday)) })}
-        </div>
-
-        <div className="mt-10 flex flex-col items-center gap-2">
-          <img src={badgeUrl(result.githubUsername)} alt="DevDNA badge" className="h-auto max-w-full" />
-          <button
-            type="button"
-            onClick={copyBadgeMarkdown}
-            className="rounded-lg bg-slate-900/60 px-5 py-2 text-sm font-semibold hover:bg-slate-800"
-          >
-            {badgeCopied ? t("copyBadgeCopied") : t("copyBadge")}
-          </button>
-        </div>
-
-        <div className="mt-10">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
-            Personality
-          </h2>
-          <div className="space-y-4">
-            {sortedTypeScores.map(([type, score]) => {
-              const typeMeta = developerTypeMeta(type, locale);
-              return (
-                <ScoreBar
-                  key={type}
-                  emoji={typeMeta.emoji}
-                  label={typeMeta.label}
-                  description={typeMeta.description}
-                  score={score}
-                />
-              );
-            })}
-          </div>
-        </div>
-
-        {Object.keys(languageRatios).length > 0 && (
-          <div className="mt-10">
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
-              Languages
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(languageRatios)
-                .sort((a, b) => b[1] - a[1])
-                .map(([lang, ratio]) => (
-                  <span key={lang} className="rounded-full bg-slate-800 px-3 py-1 text-sm">
-                    {lang} {Math.round(ratio * 100)}%
-                  </span>
-                ))}
-            </div>
-          </div>
-        )}
-
-        {/* aiSummary is a Korean-only rule-based template (backend SummaryGenerator) -- showing
-            it under an English UI would read as broken, so it's ko-only until the backend can
-            produce a localized version. */}
-        {locale === "ko" && result.aiSummary && (
-          <p className="mt-10 rounded-lg bg-slate-900/60 p-4 text-center text-slate-200">
-            {result.aiSummary}
-          </p>
-        )}
-
-        <div className="mt-12 flex flex-col items-center gap-4">
-          <img
-            src={shareCardUrl(result.githubUsername)}
-            alt="Share card"
-            className="w-full max-w-xs rounded-2xl shadow-2xl"
-          />
-          <a
-            href={shareCardUrl(result.githubUsername)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg bg-indigo-500 px-5 py-2 font-semibold hover:bg-indigo-400"
-          >
-            {t("viewShareCard")}
-          </a>
-          <div className="flex gap-3">
-            <a
-              href={xShareUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg bg-slate-900/60 px-5 py-2 text-sm font-semibold hover:bg-slate-800"
-            >
-              {t("shareOnX")}
-            </a>
-            <a
-              href={threadsShareUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg bg-slate-900/60 px-5 py-2 text-sm font-semibold hover:bg-slate-800"
-            >
-              {t("shareOnThreads")}
+        <div id="artifact-panel" role="tabpanel" aria-labelledby={`tab-${artifact}`}>
+          {failedImage === imageUrl ? <p className="artifact-missing" role="status">{t("artifactError")}</p> :
+            <figure className={`artifact-preview ${artifact === "card" ? "card-preview" : ""}`}>
+              {/* API-generated SVGs are served at their native size, without image optimization. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img key={imageUrl} src={imageUrl} alt={t(artifact === "badge" ? "badgeAlt" : "cardAlt", { username: result.githubUsername })}
+                onError={() => setFailedImage(imageUrl)} />
+            </figure>}
+          <div className="action-row">
+            <button className="button button-primary" onClick={copyArtifact}>
+              {feedback === "copyBadgeCopied" ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
+              {t(artifact === "badge" ? "copyBadge" : "copyLink")}
+            </button>
+            <a className="inline-link" href={imageUrl} target="_blank" rel="noopener noreferrer">
+              {t(artifact === "badge" ? "openBadge" : "viewShareCard")}<ArrowUpRight size={16} aria-hidden="true" />
             </a>
           </div>
-
-          <Link
-            href="/"
-            className="mt-6 rounded-lg border border-slate-700 px-5 py-2 text-sm font-semibold text-slate-300 transition hover:border-slate-500 hover:text-white"
-          >
-            {t("backToMainButton")}
-          </Link>
+          <p className="copy-feedback" role="status">{feedback ? t(feedback) : ""}</p>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl bg-slate-900/60 py-4">
-      <div className="text-2xl font-bold">{value}</div>
-      <div className="mt-1 text-xs text-slate-400">{label}</div>
-    </div>
-  );
-}
-
-function ScoreBar({
-  emoji,
-  label,
-  description,
-  score,
-}: {
-  emoji: string;
-  label: string;
-  description: string;
-  score: number;
-}) {
-  return (
-    <div>
-      <div className="flex items-center gap-3">
-        <span className="w-40 shrink-0 text-sm text-slate-300">
-          {emoji} {label}
-        </span>
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-800">
-          <div className="h-full rounded-full bg-indigo-400" style={{ width: `${score}%` }} />
+        <div className="share-links">
+          <a className="inline-link" href={`https://twitter.com/intent/tweet?${shareQuery}`} target="_blank" rel="noopener noreferrer">{t("shareOnX")}<ArrowUpRight size={14} aria-hidden="true" /></a>
+          <a className="inline-link" href={`https://www.threads.net/intent/post?${threadsQuery}`} target="_blank" rel="noopener noreferrer">{t("shareOnThreads")}<ArrowUpRight size={14} aria-hidden="true" /></a>
         </div>
-        <span className="w-8 shrink-0 text-right text-sm text-slate-400">{score}</span>
-      </div>
-      <p className="mt-1 pl-[52px] text-xs text-slate-500">{description}</p>
-    </div>
-  );
-}
-
-function StatusScreen({
-  title,
-  message,
-  progress,
-}: {
-  title: string;
-  message: string;
-  progress?: number;
-}) {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-950 to-indigo-950 px-6 text-center text-white">
-      <h1 className="text-2xl font-bold">{title}</h1>
-      <p className="mt-3 max-w-sm text-slate-400">{message}</p>
-      {progress !== undefined && (
-        <div className="mt-6 h-2 w-64 overflow-hidden rounded-full bg-slate-800">
-          <div
-            className="h-full rounded-full bg-indigo-400 transition-all"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      )}
-    </div>
+      </section>
+    </CaseFile>
   );
 }

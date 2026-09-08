@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800"
+     role="img" aria-label="DevDNA / SAMPLE / Case file / @example-dev / BUG HUNTER" font-family="'Courier Prime', 'Courier New', monospace"
+     fill="#241f1a" letter-spacing="0">
+  <title>DevDNA / SAMPLE / Case file / @example-dev / BUG HUNTER</title>
+  <rect x="0.5" y="0.5" width="599" height="799" fill="#e8dcc3" stroke="#241f1a"/>
+  <rect x="20" y="20" width="560" height="760" fill="#f1e9d2" stroke="#241f1a" stroke-opacity="0.3"/>
+  <path d="M40 69 H560 M40 211 H560 M40 313 H560 M40 548 H560 M40 650 H560 M40 727 H560"
+        fill="none" stroke="#241f1a" stroke-opacity="0.35"/>
+<text x="40" y="49" font-size="13.00" textLength="229.97" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">CATCHMEIF404 / PUBLIC RECORDS</text>
+<text x="428" y="49" font-size="12.00" textLength="80.52" lengthAdjust="spacingAndGlyphs" fill="#a32b2b" stroke="none">SAMPLE FILE</text>
+<text x="40" y="117" font-size="38.00" textLength="139.08" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">DEVDNA</text>
+<text x="40" y="143" font-size="13.00" textLength="150.67" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">DEVELOPER CASE FILE</text>
+<text x="40" y="173" font-size="11.00" textLength="187.88" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">SUBJECT / SAMPLE - FICTIONAL</text>
+<text x="40" y="197" font-size="21.00" textLength="153.72" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">@example-dev</text>
+<text x="40" y="239" font-size="11.00" textLength="161.04" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">01 / TYPE CLASSIFICATION</text>
+<text x="40" y="270" font-size="27.00" textLength="164.70" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">BUG HUNTER</text>
+<text x="40" y="295" font-size="13.00" textLength="237.90" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">Defects found. Tracks removed.</text>
+<text x="40" y="340" font-size="11.00" textLength="167.75" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">02 / ACTIVITY FINGERPRINT</text>
+<g transform="translate(57 352) scale(0.82)" fill="none" stroke="#241f1a"
+   stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+  <path d="M12 92 C12 8 176 4 178 94 C180 143 159 179 144 201"/>
+  <path d="M22 103 C12 28 156 4 167 85 C176 140 149 183 135 201"/>
+  <path d="M25 126 C48 110 13 68 62 40 C104 15 151 43 155 87 C160 140 138 175 123 196"/>
+  <path d="M19 150 C65 122 28 84 68 54 C98 32 137 53 143 88 C151 143 119 181 113 192"/>
+  <path d="M28 163 C81 125 41 86 78 65 C104 50 127 66 132 94 C140 137 114 169 102 189"/>
+  <path d="M40 177 C92 133 58 102 84 79 C103 62 122 87 120 111 C118 145 99 167 90 184"/>
+  <path d="M54 187 C106 137 73 112 92 93 C108 78 117 119 96 149"/>
+  <path d="M71 194 C80 180 91 168 96 158 M94 108 C99 127 87 146 75 160"/>
+  <path d="M3 24 V3 H24 M164 3 H187 V24 M3 180 V208 H24 M164 208 H187 V180"
+        stroke-opacity="0.45" stroke-width="1"/>
+</g>
+<text x="288" y="382" font-size="12.00" textLength="183.00" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">EVIDENCE: PUBLIC ACTIVITY</text>
+<text x="288" y="407" font-size="12.00" textLength="102.48" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">SOURCE: GITHUB</text>
+<text x="288" y="432" font-size="11.00" textLength="120.78" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">ILLUSTRATIVE PRINT</text>
+<g transform="rotate(-7 415 490)" fill="none" stroke="#a32b2b"><rect x="306" y="462" width="218" height="56" stroke-width="2"/><rect x="311" y="467" width="208" height="46"/><text x="327" y="499" font-size="26.00" textLength="95.16" lengthAdjust="spacingAndGlyphs" fill="#a32b2b" stroke="none">SAMPLE</text>
+</g><text x="40" y="574" font-size="11.00" textLength="120.78" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">03 / SAMPLE COUNTS</text>
+<path d="M211 587 V634 M387 587 V634" stroke="#241f1a" stroke-opacity="0.3"/><text x="40" y="608" font-size="24.00" textLength="73.20" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">1,842</text>
+<text x="226" y="608" font-size="24.00" textLength="29.28" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">24</text>
+<text x="402" y="608" font-size="24.00" textLength="29.28" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">89</text>
+<text x="40" y="630" font-size="11.00" textLength="46.97" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">COMMITS</text>
+<text x="226" y="630" font-size="11.00" textLength="80.52" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">REPOSITORIES</text>
+<text x="402" y="630" font-size="11.00" textLength="87.23" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">PULL REQUESTS</text>
+<text x="40" y="677" font-size="11.00" textLength="140.91" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">04 / PRIMARY LANGUAGE</text>
+<text x="40" y="705" font-size="19.00" textLength="46.36" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">Java</text>
+<text x="40" y="751" font-size="12.00" textLength="351.36" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">SAMPLE / Fictional subject. Illustrative counts.</text>
+<text x="40" y="769" font-size="10.00" textLength="231.80" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">devdna.catchmeif404.com / catchmeif404</text>
+</svg>

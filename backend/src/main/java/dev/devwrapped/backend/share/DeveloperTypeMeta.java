@@ -2,74 +2,34 @@ package dev.devwrapped.backend.share;
 
 import java.util.Map;
 
-/** Shared emoji/animal label/tagline lookup for the 10 developer types (scoring.DeveloperTypeScorer owns the list). */
+/** Artifact copy for the type IDs owned by scoring.DeveloperTypeScorer. */
 final class DeveloperTypeMeta {
+    private record Type(String label, String tagline) {}
 
-    private static final Map<String, String> EMOJI = Map.ofEntries(
-            Map.entry("NIGHT_OWL", "🌙"),
-            Map.entry("BUG_SLAYER", "🔥"),
-            Map.entry("BUILDER", "🏗"),
-            Map.entry("POLYGLOT", "🌐"),
-            Map.entry("WEEKEND_WARRIOR", "🎉"),
-            Map.entry("REFACTOR_MASTER", "🧹"),
-            Map.entry("DOCUMENTARIAN", "📚"),
-            Map.entry("TESTER", "🧪"),
-            Map.entry("EXPLORER", "🧭"),
-            Map.entry("COLLABORATOR", "🤝"));
+    private static final Type UNKNOWN = new Type("UNCLASSIFIED", "Evidence pending classification.");
+    private static final Map<String, Type> TYPES = Map.ofEntries(
+            Map.entry("NIGHT_OWL", new Type("AFTER-HOURS OPERATOR", "Activity recorded after hours.")),
+            Map.entry("BUG_SLAYER", new Type("BUG HUNTER", "Defects found. Tracks removed.")),
+            Map.entry("BUILDER", new Type("SERIAL BUILDER", "A trail of new features.")),
+            Map.entry("POLYGLOT", new Type("MULTILINGUAL OPERATOR", "Several languages. One subject.")),
+            Map.entry("WEEKEND_WARRIOR", new Type("WEEKEND OPERATIVE", "Weekend activity on the record.")),
+            Map.entry("REFACTOR_MASTER", new Type("CODE RESTORER", "The code has been put in order.")),
+            Map.entry("DOCUMENTARIAN", new Type("ARCHIVIST", "Everything leaves a paper trail.")),
+            Map.entry("TESTER", new Type("QUALITY INSPECTOR", "Claims checked against the evidence.")),
+            Map.entry("EXPLORER", new Type("REPO EXPLORER", "Evidence across repositories.")),
+            Map.entry("COLLABORATOR", new Type("COLLABORATOR", "Multiple contributors on file.")));
 
-    private static final Map<String, String> LABEL = Map.ofEntries(
-            Map.entry("NIGHT_OWL", "NIGHT OWL"),
-            Map.entry("BUG_SLAYER", "DEBUG CAT"),
-            Map.entry("BUILDER", "BUILDER BEAVER"),
-            Map.entry("POLYGLOT", "POLYGLOT PARROT"),
-            Map.entry("WEEKEND_WARRIOR", "WEEKEND OTTER"),
-            Map.entry("REFACTOR_MASTER", "TIDY FOX"),
-            Map.entry("DOCUMENTARIAN", "ARCHIVIST ELEPHANT"),
-            Map.entry("TESTER", "LAB MOUSE"),
-            Map.entry("EXPLORER", "EXPLORER TURTLE"),
-            Map.entry("COLLABORATOR", "TEAM PENGUIN"));
+    private DeveloperTypeMeta() {}
 
-    private static final Map<String, String> TAGLINE = Map.ofEntries(
-            Map.entry("NIGHT_OWL", "새벽에 강한 개발자"),
-            Map.entry("BUG_SLAYER", "버그를 사냥하는 개발자"),
-            Map.entry("BUILDER", "꾸준히 만들어가는 개발자"),
-            Map.entry("POLYGLOT", "여러 언어를 넘나드는 개발자"),
-            Map.entry("WEEKEND_WARRIOR", "주말에 불타오르는 개발자"),
-            Map.entry("REFACTOR_MASTER", "코드를 갈고 닦는 개발자"),
-            Map.entry("DOCUMENTARIAN", "기록을 남기는 개발자"),
-            Map.entry("TESTER", "테스트로 증명하는 개발자"),
-            Map.entry("EXPLORER", "여러 저장소를 넘나드는 개발자"),
-            Map.entry("COLLABORATOR", "협업으로 성장하는 개발자"));
-
-    /** One signature accent color per type so badges/cards read as distinct "collectibles", not one generic look. */
-    private static final Map<String, String> COLOR = Map.ofEntries(
-            Map.entry("NIGHT_OWL", "#4f46e5"),
-            Map.entry("BUG_SLAYER", "#dc2626"),
-            Map.entry("BUILDER", "#16a34a"),
-            Map.entry("POLYGLOT", "#0891b2"),
-            Map.entry("WEEKEND_WARRIOR", "#db2777"),
-            Map.entry("REFACTOR_MASTER", "#0d9488"),
-            Map.entry("DOCUMENTARIAN", "#d97706"),
-            Map.entry("TESTER", "#9333ea"),
-            Map.entry("EXPLORER", "#2563eb"),
-            Map.entry("COLLABORATOR", "#ea580c"));
-
-    private DeveloperTypeMeta() {
+    private static Type type(String id) {
+        return id == null ? UNKNOWN : TYPES.getOrDefault(id, UNKNOWN);
     }
 
-    static String emoji(String type) {
-        return EMOJI.getOrDefault(type, "✨");
+    static String label(String id) {
+        return type(id).label();
     }
 
-    static String label(String type) {
-        return LABEL.getOrDefault(type, type);
-    }
-
-    static String tagline(String type) {
-        return TAGLINE.getOrDefault(type, "고유한 개발 스타일을 가진 개발자");
-    }
-
-    static String color(String type) {
-        return COLOR.getOrDefault(type, "#6366f1");
+    static String tagline(String id) {
+        return type(id).tagline();
     }
 }

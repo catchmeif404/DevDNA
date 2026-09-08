@@ -2,7 +2,9 @@
 
 # DevDNA
 
-**Turn your public GitHub activity into a tiny developer identity worth showing off.**
+**Exhibit B. Your commits left a trail.**
+
+**증거물 B. 커밋은 흔적을 남깁니다.**
 
 [![DevDNA](https://devdna-production-1d53.up.railway.app/api/badge/catchmeif404.svg)](https://devdna.catchmeif404.com/dev/catchmeif404)
 
@@ -14,30 +16,33 @@ Live demo: **https://devdna.catchmeif404.com**
 
 ---
 
-## Why I built this
+## The case
 
-GitHub already knows how you build: when you commit, what you fix, which
-languages you keep coming back to, and whether you live in PRs, tests, docs, or
-late-night streaks.
+GitHub holds the record: when you commit, what you fix, where you collaborate.
+DevDNA processes that public activity into a developer case file, an evidence
+label for your README, and a shareable investigation report. Motive still unclear.
 
-But most profile tools flatten that into raw numbers. DevDNA turns the same
-public activity into a developer type, a short summary, and an animated animal
-badge you can put in your GitHub profile README.
+GitHub에는 기록이 남습니다. 언제 커밋했는지, 무엇을 고쳤는지, 누구와 작업했는지.
+DevDNA는 공개 활동을 모아 개발자 조사 기록, README 증거물 라벨, 공유 보고서를
+작성합니다. 동기는 아직 불명.
 
-The point is not to rank developers. The point is to make your coding pattern
-feel like a small collectible.
+The paper, typewriter text, redaction marks, and red stamps follow the
+[catchmeif404 case-file site](https://catchmeif404.com). Scores describe activity
+patterns; they are not probabilities or a ranking of developers.
 
 ## What it does
 
 - **Login-based self analysis** - sign in with GitHub and DevDNA analyzes the
   account you logged in with. There is no anonymous "analyze anyone" flow.
-- **10 developer animals** - Night Owl, Debug Cat, Builder Beaver, Polyglot
-  Parrot, Weekend Otter, Tidy Fox, Archivist Elephant, Lab Mouse, Explorer
-  Turtle, and Team Penguin.
-- **Animated README badge** - `GET /api/badge/{username}.svg` returns a moving
-  SVG mascot badge designed for GitHub README `<img>` embedding.
-- **Share card** - `GET /api/share/{username}/card` renders a larger SVG card
-  from the latest saved result.
+- **10 developer profiles** - After-hours Operator, Bug Hunter, Serial Builder,
+  Multilingual Operator, Weekend Operative, Code Restorer, Archivist,
+  Quality Inspector, Repo Explorer, and Collaborator. Stored scoring IDs are unchanged.
+- **README evidence label** - `GET /api/badge/{username}.svg` returns a static
+  SVG with the subject, classification, recorded counts, and an illustrative fingerprint.
+- **Share report** - `GET /api/share/{username}/card` renders a 600 x 800
+  SVG dossier from the latest saved result.
+- **English + Korean** - localized screens, statuses, and sharing text. Exported
+  evidence labels and reports use English archive headings.
 - **Rule-based summary** - the `ai_summary` field exists, but the MVP does not
   call an LLM. It stores a deterministic template summary generated from the
   computed features.
@@ -51,9 +56,14 @@ Once your account has been analyzed, add this to your GitHub profile README
 [![DevDNA](https://devdna-production-1d53.up.railway.app/api/badge/catchmeif404.svg)](https://devdna.catchmeif404.com/dev/catchmeif404)
 ```
 
-If the account has no saved analysis yet, the endpoint still returns a gray
-`no data yet` badge instead of a broken image. The first 3 accounts ever
-analyzed also get a small gold crown on their badge.
+If the account has no saved analysis yet, the endpoint returns an
+`AWAITING EVIDENCE` label instead of a broken image. The first 3 accounts ever
+analyzed retain a red `Founding member #N` annotation.
+
+Fictional evidence-label and report samples are checked in at
+[`sample-badge.svg`](frontend/public/sample-badge.svg) and
+[`sample-card.svg`](frontend/public/sample-card.svg). Fingerprint artwork is
+illustrative, not biometric data or a visualization of the scoring vector.
 
 Local preview:
 
@@ -90,7 +100,7 @@ Backend -- upsert user + create job --> PostgreSQL
                                               generate rule-based summary
                                               persist result ----------------> PostgreSQL
 
-README <img> -- GET /api/badge/{username}.svg --> animated SVG badge
+README <img> -- GET /api/badge/{username}.svg --> SVG evidence label
 ```
 
 Analysis runs as a background task inside the backend process (`@Async`), not
@@ -145,13 +155,32 @@ http://localhost:8090/api/auth/github/callback
 
 ## Roadmap
 
-- Better mascot art pass for all 10 animals
-- Result page animal illustrations, not just README badges
+- Localized text inside exported evidence labels and reports
 - Optional LLM-backed explanation after deterministic scoring
 - Retry/resume for a job that dies mid-analysis (currently just fails)
 - Username-change-safe result ownership model
 
 ## Contributing
+
+Design verification (run the frontend on port 3010 first):
+
+```bash
+cd frontend
+npx playwright install chromium
+npm run test:ui
+```
+
+This uses fictional API fixtures and writes desktop/mobile screenshots to
+`frontend/artifacts/case-file/`. Set `DEVDNA_TEST_URL` to test a local Workers
+preview instead. It does not sign in to GitHub or create a real analysis.
+
+SVG checks and sample regeneration (Java 21):
+
+```bash
+cd backend
+./gradlew test --tests 'dev.devwrapped.backend.share.*'
+JAVA_TOOL_OPTIONS="-Ddevdna.previewDir=../frontend/public" ./gradlew test --tests '*SharePreviewTest' --rerun-tasks
+```
 
 Issues, ideas, and PRs are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md)
 before opening a PR.
