@@ -33,3 +33,8 @@ server:
 
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3010}
+  # Optional - unset means every collector request is unauthenticated and shares GitHub's very
+  # low per-IP rate limit across all users. A classic PAT with no scopes checked is enough (this
+  # only ever reads public data). See collector.GithubApiClient.
+  github:
+    token: ${GITHUB_API_TOKEN:}
