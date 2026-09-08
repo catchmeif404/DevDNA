@@ -40,6 +40,24 @@ class DeveloperTypeScorerTest {
     }
 
     @Test
+    void picksExplorerOnlyWhenRepositoryDiversityIsActuallyHigh() {
+        Features features = features(0.05, 0.05, Map.of("Java", 1L), 200, 30, 30, 0);
+        ScoringResult result = scorer.score(features);
+        assertThat(result.developerType()).isEqualTo("EXPLORER");
+        assertThat(result.typeScores().get("EXPLORER")).isEqualTo(100);
+    }
+
+    @Test
+    void fewReposScoreLowerOnExplorerThanBefore() {
+        // Regression: a /15 denominator gave 4 repos 27 pts, enough to auto-win almost every real
+        // analysis (confirmed empirically — three different real accounts all came back EXPLORER
+        // TURTLE). With a /30 denominator, 4 repos only scores 13.
+        Features features = features(0.1, 0.1, Map.of("Java", 1L), 60, 20, 4, 0);
+        ScoringResult result = scorer.score(features);
+        assertThat(result.typeScores().get("EXPLORER")).isEqualTo(13);
+    }
+
+    @Test
     void picksCollaboratorWhenPullRequestActivityDominates() {
         Features features = features(0.0, 0.0, Map.of("Java", 1L), 10, 5, 3, 20);
         ScoringResult result = scorer.score(features);

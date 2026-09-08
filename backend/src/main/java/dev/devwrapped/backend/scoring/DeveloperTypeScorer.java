@@ -11,6 +11,16 @@ import org.springframework.stereotype.Service;
  *
  * <p>10 developer types, each keyed to a single normalized feature so no type wins just because
  * its denominator is easy to max out. Ties keep the first type listed in {@code scoreTypes}.
+ *
+ * <p><b>The denominators below matter a lot — they were miscalibrated once already</b> (see
+ * {@code fewLanguagesScoreLowerOnPolyglotThanBefore}'s regression comment: POLYGLOT used to be
+ * {@code / 8} and dominated for the same structural reason described next). EXPLORER's {@code
+ * repositoryDiversity / 15} had the same bug: a moderately active account touching just 4 repos
+ * (very common — personal projects, a couple of org repos, one fork) already scored 27%, while
+ * the commit-ratio types (NIGHT_OWL, BUG_SLAYER, etc.) split their numerator across 6 commit-type
+ * buckets and rarely clear 30% for a typical user. Confirmed empirically: three different real
+ * accounts all came back EXPLORER TURTLE. Raised so "explorer" requires genuinely unusual
+ * repository breadth, not just having more than a couple of repos.
  */
 @Service
 public class DeveloperTypeScorer {
@@ -18,7 +28,7 @@ public class DeveloperTypeScorer {
     public ScoringResult score(Features f) {
         double persistenceNorm = Math.min(1.0, f.distinctActiveDays() / 180.0);
         double languageDiversityNorm = Math.min(1.0, f.languageCounts().size() / 15.0);
-        double repositoryDiversityNorm = Math.min(1.0, f.repositoryDiversity() / 15.0);
+        double repositoryDiversityNorm = Math.min(1.0, f.repositoryDiversity() / 30.0);
         double prActivityNorm = Math.min(1.0, f.pullRequestCount() / 20.0);
 
         Map<String, Integer> scores = new LinkedHashMap<>();

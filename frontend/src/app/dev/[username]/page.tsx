@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import {
   type AnalysisResult,
@@ -110,11 +111,18 @@ export default function ResultPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-indigo-950 px-6 py-16 text-white">
       <div className="mx-auto max-w-2xl">
-        <p className="text-center text-sm tracking-[0.3em] text-indigo-300">DEV DNA</p>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm text-slate-400 transition hover:text-white"
+        >
+          ← 메인으로
+        </Link>
+        <p className="mt-6 text-center text-sm tracking-[0.3em] text-indigo-300">DEV DNA</p>
         <p className="mt-2 text-center text-slate-400">{result.githubUsername}님의 개발자 유형</p>
         <div className="mt-6 text-center text-7xl">{meta.emoji}</div>
         <h1 className="mt-2 text-center text-4xl font-bold">{meta.label}</h1>
         <p className="mt-2 text-center text-slate-300">&ldquo;{meta.tagline}&rdquo;</p>
+        <p className="mx-auto mt-2 max-w-md text-center text-sm text-slate-400">{meta.description}</p>
 
         <div className="mt-10 grid grid-cols-3 gap-4 text-center">
           <Stat label="Commits" value={result.totalCommits.toLocaleString()} />
@@ -135,10 +143,18 @@ export default function ResultPage() {
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
             Personality
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {sortedTypeScores.map(([type, score]) => {
               const typeMeta = developerTypeMeta(type);
-              return <ScoreBar key={type} emoji={typeMeta.emoji} label={typeMeta.label} score={score} />;
+              return (
+                <ScoreBar
+                  key={type}
+                  emoji={typeMeta.emoji}
+                  label={typeMeta.label}
+                  description={typeMeta.description}
+                  score={score}
+                />
+              );
             })}
           </div>
         </div>
@@ -209,6 +225,13 @@ export default function ResultPage() {
               {badgeCopied ? "복사됨!" : "README 뱃지 마크다운 복사"}
             </button>
           </div>
+
+          <Link
+            href="/"
+            className="mt-6 rounded-lg border border-slate-700 px-5 py-2 text-sm font-semibold text-slate-300 transition hover:border-slate-500 hover:text-white"
+          >
+            메인으로 돌아가기
+          </Link>
         </div>
       </div>
     </div>
@@ -224,16 +247,29 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ScoreBar({ emoji, label, score }: { emoji: string; label: string; score: number }) {
+function ScoreBar({
+  emoji,
+  label,
+  description,
+  score,
+}: {
+  emoji: string;
+  label: string;
+  description: string;
+  score: number;
+}) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="w-40 shrink-0 text-sm text-slate-300">
-        {emoji} {label}
-      </span>
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-800">
-        <div className="h-full rounded-full bg-indigo-400" style={{ width: `${score}%` }} />
+    <div>
+      <div className="flex items-center gap-3">
+        <span className="w-40 shrink-0 text-sm text-slate-300">
+          {emoji} {label}
+        </span>
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-800">
+          <div className="h-full rounded-full bg-indigo-400" style={{ width: `${score}%` }} />
+        </div>
+        <span className="w-8 shrink-0 text-right text-sm text-slate-400">{score}</span>
       </div>
-      <span className="w-8 shrink-0 text-right text-sm text-slate-400">{score}</span>
+      <p className="mt-1 pl-[52px] text-xs text-slate-500">{description}</p>
     </div>
   );
 }
