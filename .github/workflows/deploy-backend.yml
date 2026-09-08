@@ -10,7 +10,7 @@ name: Deploy Backend
 # to that folder, which conflicts with Root Directory = `backend` and intermittently fails with
 # "Root directory '/backend' was not found in the deployed source".
 #
-# Before this workflow can deploy: create the Railway project + Postgres + a `devdna-backend`
+# Before this workflow can deploy: create the Railway project + Postgres + a `DevDNA`
 # service (Dockerfile build, Root Directory = backend), and add a RAILWAY_TOKEN repo secret.
 
 on:
@@ -31,4 +31,4 @@ jobs:
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service devdna-backend --detach
+        run: railway up --service DevDNA --detach
