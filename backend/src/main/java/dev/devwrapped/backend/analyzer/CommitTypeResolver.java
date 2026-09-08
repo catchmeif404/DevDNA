@@ -42,22 +42,31 @@ public class CommitTypeResolver {
         }
         AiCommitClassifier primary = findProvider();
         if (primary == null) {
+            log.info("Commit classification: provider='{}' (no AI classifier selected), classifying {} commits via regex",
+                    provider, messages.size());
             return classifyWithRegex(messages);
         }
 
+        int aiClassified = 0;
         List<CommitType> result = new ArrayList<>(messages.size());
         for (int start = 0; start < messages.size(); start += CHUNK_SIZE) {
             List<String> chunk = messages.subList(start, Math.min(start + CHUNK_SIZE, messages.size()));
-            result.addAll(classifyChunk(primary, chunk));
+            ChunkResult chunkResult = classifyChunk(primary, chunk);
+            result.addAll(chunkResult.types());
+            if (chunkResult.usedAi()) {
+                aiClassified += chunk.size();
+            }
         }
+        log.info("Commit classification: provider='{}', {}/{} commits classified via AI ({} fell back to regex)",
+                primary.name(), aiClassified, messages.size(), messages.size() - aiClassified);
         return result;
     }
 
-    private List<CommitType> classifyChunk(AiCommitClassifier primary, List<String> chunk) {
+    private ChunkResult classifyChunk(AiCommitClassifier primary, List<String> chunk) {
         try {
             List<CommitType> types = primary.classifyBatch(chunk);
             if (types != null && types.size() == chunk.size()) {
-                return types;
+                return new ChunkResult(types, true);
             }
             log.warn("AI commit classifier ({}) returned {} labels for {} commits, falling back to regex for this chunk",
                     primary.name(), types == null ? -1 : types.size(), chunk.size());
@@ -65,7 +74,10 @@ public class CommitTypeResolver {
             log.warn("AI commit classifier ({}) failed, falling back to regex for this chunk: {}",
                     primary.name(), e.getMessage());
         }
-        return classifyWithRegex(chunk);
+        return new ChunkResult(classifyWithRegex(chunk), false);
+    }
+
+    private record ChunkResult(List<CommitType> types, boolean usedAi) {
     }
 
     private List<CommitType> classifyWithRegex(List<String> messages) {
