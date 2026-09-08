@@ -66,8 +66,7 @@ That only works on your machine. GitHub needs a public HTTPS backend URL.
 |---|---|
 | Frontend | Next.js, TypeScript, Tailwind CSS |
 | Backend | Spring Boot, Java 21, Flyway |
-| Worker | Spring Boot, Java 21 |
-| Data | PostgreSQL for users/jobs/results, Redis for the analysis queue |
+| Data | PostgreSQL for users/jobs/results |
 | Auth | GitHub OAuth |
 | Deployment target | Railway |
 
@@ -79,22 +78,22 @@ GitHub login
     v
 Backend -- upsert user + create job --> PostgreSQL
     |
-    +-- enqueue job id ----------------> Redis
-                                          |
-                                          v
-Worker -- collect public GitHub activity -> GitHub API
-    |
-    +-- extract features
-    +-- score developer type
-    +-- generate rule-based summary
-    +-- persist result ----------------> PostgreSQL
+    +-- run analysis async (same process, no queue) --> GitHub API
+                                                            |
+                                                            v
+                                              extract features
+                                              score developer type
+                                              generate rule-based summary
+                                              persist result ----------------> PostgreSQL
 
 README <img> -- GET /api/badge/{username}.svg --> animated SVG badge
 ```
 
-The backend and worker are separate Spring Boot apps sharing the same database
-schema. Only the backend runs Flyway migrations; the worker expects the schema
-to already exist.
+Analysis runs as a background task inside the backend process (`@Async`), not
+a separate worker service behind a queue. At this project's actual traffic —
+one self-analysis per login — a dedicated queue + worker (Redis, a second
+Spring Boot app) added ops complexity without a real durability or scaling
+benefit, so it was simplified away.
 
 ## Running it locally
 
@@ -109,13 +108,11 @@ docker compose up -d
 |---|---|
 | Frontend | http://localhost:3010 |
 | Backend API | http://localhost:8090 |
-| Worker | http://localhost:8081 |
 
-Health checks:
+Health check:
 
 ```bash
 curl http://localhost:8090/actuator/health
-curl http://localhost:8081/actuator/health
 ```
 
 For the login flow, create a real GitHub OAuth App and set:
@@ -137,8 +134,9 @@ http://localhost:8090/api/auth/github/callback
 - No LLM integration yet. Summaries are rule-based templates.
 - Raw GitHub repo/commit data is not stored; only final analysis results are
   persisted.
-- Redis is used as a simple queue and has no visibility timeout or automatic
-  retry replay.
+- If the backend process restarts mid-analysis, that in-flight job is lost
+  (stays stuck at COLLECTING/ANALYZING) with no automatic retry — same
+  failure mode the old Redis queue had, just without the extra service.
 - GitHub username changes are not fully normalized yet; results still keep a
   denormalized `github_username` string for public lookup.
 
@@ -148,7 +146,7 @@ http://localhost:8090/api/auth/github/callback
 - Better mascot art pass for all 10 animals
 - Result page animal illustrations, not just README badges
 - Optional LLM-backed explanation after deterministic scoring
-- More robust queue retry/DLQ replay
+- Retry/resume for a job that dies mid-analysis (currently just fails)
 - Username-change-safe result ownership model
 
 ## Contributing

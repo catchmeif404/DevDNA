@@ -47,6 +47,10 @@ export function shareCardUrl(username: string): string {
   return `${API_URL}/api/share/${username}/card`;
 }
 
+export function badgeUrl(username: string): string {
+  return `${API_URL}/api/badge/${username}.svg`;
+}
+
 export function githubLoginUrl(): string {
   return `${API_URL}/api/auth/github`;
 }

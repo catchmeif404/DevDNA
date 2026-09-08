@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import {
   type AnalysisResult,
   type JobStatus,
+  badgeUrl,
   getJobResult,
   getJobStatus,
   getLatestResultByUsername,
@@ -28,6 +29,7 @@ export default function ResultPage() {
   const [job, setJob] = useState<JobStatus | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [badgeCopied, setBadgeCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,6 +99,13 @@ export default function ResultPage() {
   const shareText = `나는 ${meta.emoji} ${meta.label}! "${meta.tagline}" - DevDNA로 내 GitHub 분석해보기`;
   const xShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`;
   const threadsShareUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(`${shareText} ${pageUrl}`)}`;
+  const badgeMarkdown = `[![DevDNA](${badgeUrl(result.githubUsername)})](${pageUrl})`;
+
+  async function copyBadgeMarkdown() {
+    await navigator.clipboard.writeText(badgeMarkdown);
+    setBadgeCopied(true);
+    setTimeout(() => setBadgeCopied(false), 2000);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-indigo-950 px-6 py-16 text-white">
@@ -188,6 +197,17 @@ export default function ResultPage() {
             >
               Threads에 공유하기
             </a>
+          </div>
+
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <img src={badgeUrl(result.githubUsername)} alt="DevDNA badge" className="h-auto max-w-full" />
+            <button
+              type="button"
+              onClick={copyBadgeMarkdown}
+              className="rounded-lg bg-slate-900/60 px-5 py-2 text-sm font-semibold hover:bg-slate-800"
+            >
+              {badgeCopied ? "복사됨!" : "README 뱃지 마크다운 복사"}
+            </button>
           </div>
         </div>
       </div>

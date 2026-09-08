@@ -11,10 +11,6 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
   security:
     oauth2:
       client:
@@ -32,5 +28,3 @@ server:
 
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3010}
-  analysis-queue-key: analysis:queue
-  analysis-dlq-key: analysis:dlq

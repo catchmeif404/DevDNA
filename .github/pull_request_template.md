@@ -11,7 +11,6 @@
 <!-- 로컬에서 무엇을 확인했는지 체크해주세요 -->
 
 - [ ] `./gradlew test` (backend)
-- [ ] `./gradlew test` (worker)
 - [ ] `npm run lint` / `npx tsc --noEmit` (frontend)
 - [ ] 브라우저에서 실제 동작 확인
 

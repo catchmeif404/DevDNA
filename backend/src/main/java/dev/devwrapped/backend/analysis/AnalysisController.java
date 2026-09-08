@@ -14,13 +14,13 @@ public class AnalysisController {
 
     private final AnalysisJobRepository jobRepository;
     private final AnalysisResultRepository resultRepository;
-    private final AnalysisQueuePublisher queuePublisher;
+    private final AnalysisRunner analysisRunner;
 
     public AnalysisController(AnalysisJobRepository jobRepository, AnalysisResultRepository resultRepository,
-            AnalysisQueuePublisher queuePublisher) {
+            AnalysisRunner analysisRunner) {
         this.jobRepository = jobRepository;
         this.resultRepository = resultRepository;
-        this.queuePublisher = queuePublisher;
+        this.analysisRunner = analysisRunner;
     }
 
     /** Always analyzes the caller's own GitHub account — SecurityConfig requires authentication here. */
@@ -29,7 +29,7 @@ public class AnalysisController {
         String githubUsername = principal.getAttribute("login");
         AnalysisJob job = new AnalysisJob(githubUsername);
         job = jobRepository.save(job);
-        queuePublisher.enqueue(job.getId());
+        analysisRunner.runAsync(job.getId());
         return ResponseEntity.ok(Map.of("jobId", job.getId(), "status", job.getStatus()));
     }
 

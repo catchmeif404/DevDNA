@@ -6,11 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 DevDNA analyzes a GitHub user's public activity (commits, repos, PRs) and generates a "developer type" / stats card, similar in spirit to Spotify Wrapped. It is an open-source portfolio project (see `docs/설계문서.md` for the full design doc — written ahead of implementation, so treat it as intent/roadmap, not a description of current code; the README's "알려진 제약" section is the accurate current-state summary).
 
-Full-stack, three deployable services in one repo:
+Full-stack, two deployable services in one repo:
 
 - `frontend/` — Next.js (App Router) + TypeScript + Tailwind
-- `backend/` — Spring Boot (Java 21) API server
-- `worker/` — Spring Boot (Java 21) async analysis worker
+- `backend/` — Spring Boot (Java 21) API server, including the GitHub-collection/scoring/summary
+  pipeline that used to live in a separate `worker/` service (removed — see "Async analysis" below)
 
 ## Local development
 
@@ -23,9 +23,8 @@ docker compose up -d
 |-------------|-------------------------|
 | Frontend    | http://localhost:3010   |
 | Backend API | http://localhost:8090   |
-| Worker      | http://localhost:8081   |
 
-Health checks: `curl http://localhost:8090/actuator/health`, `curl http://localhost:8081/actuator/health`.
+Health check: `curl http://localhost:8090/actuator/health`.
 
 Requires a real GitHub OAuth App (`GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` in `.env`, callback `http://localhost:8090/api/auth/github/callback`) — the login flow is fully wired end to end, there is no anonymous/test-mode analyze path anymore.
 
@@ -35,14 +34,11 @@ Requires a real GitHub OAuth App (`GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` in `
 # backend (port 8090 via docker-compose env, 8080 by default standalone)
 cd backend && ./gradlew bootRun
 
-# worker
-cd worker && ./gradlew bootRun
-
 # frontend
 cd frontend && npm run dev
 ```
 
-Backend and worker both need Postgres + Redis reachable via `DB_*`/`REDIS_*` env vars (defaults target `localhost`); `docker compose up -d postgres redis` works, or point them at any local Postgres/Redis (e.g. Homebrew services) as long as the `devwrapped`/`devwrapped` role+database exists.
+Backend needs Postgres reachable via `DB_*` env vars (defaults target `localhost`); `docker compose up -d postgres` works, or point it at any local Postgres (e.g. Homebrew services) as long as the `devwrapped`/`devwrapped` role+database exists. No Redis, no second service — see "Async analysis" below.
 
 ## Build, lint, test
 
@@ -51,38 +47,30 @@ Backend and worker both need Postgres + Redis reachable via `DB_*`/`REDIS_*` env
 cd backend && ./gradlew build          # compile + test
 cd backend && ./gradlew test           # tests only (JUnit 5)
 cd backend && ./gradlew test --tests "dev.devwrapped.backend.BackendApplicationTests"
-
-# worker
-cd worker && ./gradlew build
-cd worker && ./gradlew test
-cd worker && ./gradlew test --tests "dev.devwrapped.worker.scoring.DeveloperTypeScorerTest"
+cd backend && ./gradlew test --tests "dev.devwrapped.backend.scoring.DeveloperTypeScorerTest"
 
 # frontend
 cd frontend && npm run lint
 cd frontend && npm run build
 ```
 
-Worker tests use plain JUnit 5 + AssertJ for pure-logic classes (`CommitClassifier`, `DeveloperTypeScorer`) — no Spring context needed for those.
+`CommitClassifierTest`/`DeveloperTypeScorerTest` exercise plain JUnit 5 + AssertJ pure-logic classes — no Spring context needed for those.
 
 ## Architecture
 
-### Auth + job pipeline (the core flow)
+### Auth + async analysis pipeline (the core flow)
 
 1. Frontend home page is a single "GitHub로 로그인" link to `GET /api/auth/github` (Spring Security's OAuth2 login, configured in `SecurityConfig` with `authorizationEndpoint` baseUri `/api/auth`).
-2. On success, `OAuth2LoginSuccessHandler` upserts the `User` row, **immediately creates and enqueues an `AnalysisJob` for that account** (self-analysis only — there's no way to request analysis of another username), then redirects to `/dev/{login}?job={jobId}`.
+2. On success, `OAuth2LoginSuccessHandler` upserts the `User` row, **immediately creates an `AnalysisJob` for that account and hands it to `AnalysisRunner.runAsync`** (self-analysis only — there's no way to request analysis of another username), then redirects to `/dev/{login}?job={jobId}`.
 3. `POST /api/analyses` (`AnalysisController`) is the same job-creation path but requires an authenticated session; it ignores any client-supplied username and always uses `principal.getAttribute("login")`. `GET /api/analyses/{jobId}` (status) and `GET /api/analyses/{jobId}/result` stay public (`SecurityConfig` permits them) since they only expose data for a job that's already running.
-4. Either path pushes the job id onto a Redis list (`AnalysisQueuePublisher`, key `app.analysis-queue-key` = `analysis:queue`). `worker/.../common/AnalysisQueueConsumer` runs a single background thread (`@PostConstruct`-started `ExecutorService`) doing a blocking `LPOP` loop on that same key.
-5. Per job it runs: `CollectorService` (GitHub API) → `FeatureExtractor` (raw activity → `Features`) → `DeveloperTypeScorer` (`Features` → `ScoringResult`) → `SummaryGenerator` (rule-based text, not an LLM yet) → persists `AnalysisResult`, updates `AnalysisJob` status through `COLLECTING` → `ANALYZING` → `COMPLETED`/`FAILED`.
-6. On failure the job id is pushed to a separate DLQ Redis key (`app.analysis-dlq-key` = `analysis:dlq`); there is currently no automatic DLQ replay.
-7. `GET /api/users/{username}/result` (`UserController`) also stays public and returns the latest result for any username regardless of who's logged in — analysis results are public GitHub-activity data, only *triggering* a new analysis is gated behind login.
+4. `AnalysisRunner.runAsync` (`analysis` package, `@Async` — enabled via `@EnableAsync` on `BackendApplication`) runs on Spring's default task executor, off the request thread: `CollectorService` (GitHub API) → `FeatureExtractor` (raw activity → `Features`) → `DeveloperTypeScorer` (`Features` → `ScoringResult`) → `SummaryGenerator` (rule-based text, not an LLM yet) → persists `AnalysisResult`, updates `AnalysisJob` status through `COLLECTING` → `ANALYZING` → `COMPLETED`/`FAILED`.
+5. `GET /api/users/{username}/result` (`UserController`) also stays public and returns the latest result for any username regardless of who's logged in — analysis results are public GitHub-activity data, only *triggering* a new analysis is gated behind login.
 
-Redis is standing in for a managed queue (SQS-like) with no built-in visibility timeout or retry — see `docs/설계문서.md` §21 if extending failure handling.
-
-**Backend and worker are two independent Spring Boot apps that share the same Postgres schema** (`AnalysisJob`/`AnalysisResult` entities are duplicated across both, not shared via a common module — check both copies when changing the schema or a field). Only the backend runs Flyway migrations (`backend/src/main/resources/db/migration/`); the worker has `ddl-auto: none` and no Flyway, so it depends on the backend having migrated the schema first.
+**No queue, no separate worker service.** This used to be a Redis list (`AnalysisQueuePublisher`) consumed by a standalone `worker/` Spring Boot app polling with a blocking `LPOP` loop — modeled after an SQS-backed architecture as a portfolio choice (see `docs/설계문서.md` §21), not because the traffic (one self-analysis per login) needed it. It was simplified to an in-process `@Async` call: same async, non-blocking behavior for the caller, one fewer service to run/deploy/pay for, and no real durability was actually lost — the old queue had no visibility timeout either, so a crash mid-job lost the job exactly like this does. If a job dies mid-run now, it just stays stuck at `COLLECTING`/`ANALYZING` with no auto-retry, same as before.
 
 ### Developer-type scoring (10 types, not 4)
 
-`DeveloperTypeScorer` scores 10 types into a `Map<String, Integer>` (`ScoringResult.typeScores()`), each keyed to one normalized feature so no type has a structurally easier path to a high score than the others: `NIGHT_OWL`, `BUG_SLAYER`, `BUILDER`, `POLYGLOT`, `WEEKEND_WARRIOR`, `REFACTOR_MASTER`, `DOCUMENTARIAN`, `TESTER`, `EXPLORER` (distinct active repos), `COLLABORATOR` (PR activity). The winning type (highest score, ties keep the first-listed type) becomes `developerType`. When adding an 11th type, update all four places that know the full type list: `DeveloperTypeScorer`, `ShareCardGenerator` (backend), `SummaryGenerator` (worker), and `frontend/src/lib/developerType.ts`.
+`DeveloperTypeScorer` scores 10 types into a `Map<String, Integer>` (`ScoringResult.typeScores()`), each keyed to one normalized feature so no type has a structurally easier path to a high score than the others: `NIGHT_OWL`, `BUG_SLAYER`, `BUILDER`, `POLYGLOT`, `WEEKEND_WARRIOR`, `REFACTOR_MASTER`, `DOCUMENTARIAN`, `TESTER`, `EXPLORER` (distinct active repos), `COLLABORATOR` (PR activity). The winning type (highest score, ties keep the first-listed type) becomes `developerType`. When adding an 11th type, update all four places that know the full type list: `DeveloperTypeScorer`, `ShareCardGenerator`, `SummaryGenerator`, and `frontend/src/lib/developerType.ts` — all four now live in `backend/` (see package layout below).
 
 Scores persist as a single JSON `type_scores` column on `analysis_results` (added in `V2__type_scores.sql`, replacing 4 fixed score columns) — adding more types doesn't need another migration.
 
@@ -90,8 +78,10 @@ Scores persist as a single JSON `type_scores` column on `analysis_results` (adde
 
 Each package has a `package-info.java` with a one-line description — check it before adding to a package.
 
-- `backend`: `auth` (GitHub OAuth2 login), `github` (API client stub, not yet implemented), `analysis` (job status/result + queue publish), `user`, `share` (share cards / badge endpoints), `common` (security config, cross-cutting)
-- `worker`: `collector` (GitHub API calls), `analyzer` (feature extraction, commit classification), `scoring` (developer-type rules + DNA vector), `ai` (feeds only computed features to the summary generator, never raw commit text — see §14/§20 of the design doc for why), `common` (queue consumer, shared entities)
+- `auth` (GitHub OAuth2 login), `github` (API client stub, not yet implemented — unrelated to `collector` below, which is the real GitHub client used by the analysis pipeline), `analysis` (job status/result + `AnalysisRunner`, the `@Async` pipeline entry point), `user`, `share` (share cards / badge endpoints), `common` (security config, cross-cutting)
+- `collector` (GitHub API calls — `GithubApiClient`, `CollectorService`), `analyzer` (feature extraction, commit classification), `scoring` (developer-type rules + DNA vector), `ai` (feeds only computed features to the summary generator, never raw commit text — see §14/§20 of the design doc for why)
+
+These last four packages moved here from the old `worker/` service — see "Async analysis" above.
 
 ### Frontend
 
@@ -103,7 +93,7 @@ Postgres tables (backend-owned, via Flyway migrations in `backend/src/main/resou
 
 ### Share cards, README badge, and social sharing
 
-`backend/.../share/DeveloperTypeMeta` is the single source of truth for emoji/animal label/tagline/**accent color** per developer type on the backend side (used by `ShareCardGenerator` for emoji cards and by `BadgeGenerator` for animal labels/type color — keep it in sync with the worker's `DeveloperTypeScorer` type list and `frontend/src/lib/developerType.ts`; adding an 11th type means adding a `COLOR` entry too, or it silently falls back to the generic indigo default). `GET /api/share/{username}/card` renders the big vertical share card (404 if no result yet); `GET /api/badge/{username}.svg` (`ShareController.badge`) renders a rounded animated "achievement chip" — custom vector animal mascot plus a two-line label on a dark→type-color diagonal gradient, deliberately not a flat shields.io metrics rectangle — and always returns 200: a gray "no data yet" chip instead of a 404 broken image when the username hasn't been analyzed. Both endpoints are public (`SecurityConfig` permits `/api/share/**` and `/api/badge/**`) since they only expose already-computed public data.
+`backend/.../share/DeveloperTypeMeta` is the single source of truth for emoji/animal label/tagline/**accent color** per developer type on the backend side (used by `ShareCardGenerator` for emoji cards and by `BadgeGenerator` for animal labels/type color — keep it in sync with `DeveloperTypeScorer`'s type list and `frontend/src/lib/developerType.ts`; adding an 11th type means adding a `COLOR` entry too, or it silently falls back to the generic indigo default). `GET /api/share/{username}/card` renders the big vertical share card (404 if no result yet); `GET /api/badge/{username}.svg` (`ShareController.badge`) renders a rounded animated "achievement chip" — custom vector animal mascot plus a two-line label on a dark→type-color diagonal gradient, deliberately not a flat shields.io metrics rectangle — and always returns 200: a gray "no data yet" chip instead of a 404 broken image when the username hasn't been analyzed. Both endpoints are public (`SecurityConfig` permits `/api/share/**` and `/api/badge/**`) since they only expose already-computed public data.
 
 The result page's "X에 공유하기" / "Threads에 공유하기" buttons are plain client-side intent-URL links (`twitter.com/intent/tweet`, `threads.net/intent/post`) built in `frontend/src/app/dev/[username]/page.tsx` — no backend involvement, no API keys.
 

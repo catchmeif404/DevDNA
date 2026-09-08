@@ -21,7 +21,7 @@ docker compose up -d
 
 ## 코드 스타일
 
-- **Backend/Worker (Spring Boot)**: 패키지는 기능 단위로 구성됩니다 (`auth`, `analysis`, `collector`, `scoring` 등). 새 패키지를 만들 땐 `package-info.java`에 한 줄 설명을 남겨주세요 — 기존 패키지들이 전부 그렇게 되어 있습니다.
+- **Backend (Spring Boot)**: 패키지는 기능 단위로 구성됩니다 (`auth`, `analysis`, `collector`, `scoring` 등). 새 패키지를 만들 땐 `package-info.java`에 한 줄 설명을 남겨주세요 — 기존 패키지들이 전부 그렇게 되어 있습니다.
 - **Frontend (Next.js)**: `src/lib/`에 백엔드 API 호출을 모아두고, 컴포넌트에서 직접 `fetch`를 호출하지 않습니다.
 - 과도한 추상화나 지금 당장 필요 없는 설정 옵션은 지양합니다 — 이 프로젝트는 MVP 단계입니다.
 
@@ -32,9 +32,6 @@ PR을 올리기 전에 관련 테스트를 돌려주세요:
 ```bash
 # backend
 cd backend && ./gradlew test
-
-# worker
-cd worker && ./gradlew test
 
 # frontend
 cd frontend && npm run lint && npx tsc --noEmit

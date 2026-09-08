@@ -23,7 +23,7 @@ labels: bug
 
 - 실행 방식: (docker compose / 개별 서비스 로컬 실행 / 배포된 서비스)
 - OS:
-- 관련 서비스: (frontend / backend / worker)
+- 관련 서비스: (frontend / backend)
 
 ## 로그 / 스크린샷
 

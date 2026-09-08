@@ -2,7 +2,7 @@ package dev.devwrapped.backend.auth;
 
 import dev.devwrapped.backend.analysis.AnalysisJob;
 import dev.devwrapped.backend.analysis.AnalysisJobRepository;
-import dev.devwrapped.backend.analysis.AnalysisQueuePublisher;
+import dev.devwrapped.backend.analysis.AnalysisRunner;
 import dev.devwrapped.backend.user.User;
 import dev.devwrapped.backend.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * GitHub 로그인 성공 시 User를 upsert하고, 로그인한 계정 자신에 대한 AnalysisJob을
- * 바로 생성/큐잉한 뒤 그 job을 폴링하는 결과 페이지로 리다이렉트한다.
+ * 바로 생성하고 비동기로 실행시킨 뒤 그 job을 폴링하는 결과 페이지로 리다이렉트한다.
  * Access Token은 세션 밖으로 노출하지 않으며 DB에 저장하지 않는다 (섹션 6/20 원칙).
  */
 @Component
@@ -24,14 +24,14 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
     private final AnalysisJobRepository jobRepository;
-    private final AnalysisQueuePublisher queuePublisher;
+    private final AnalysisRunner analysisRunner;
     private final String frontendUrl;
 
     public OAuth2LoginSuccessHandler(UserRepository userRepository, AnalysisJobRepository jobRepository,
-            AnalysisQueuePublisher queuePublisher, @Value("${app.frontend-url}") String frontendUrl) {
+            AnalysisRunner analysisRunner, @Value("${app.frontend-url}") String frontendUrl) {
         this.userRepository = userRepository;
         this.jobRepository = jobRepository;
-        this.queuePublisher = queuePublisher;
+        this.analysisRunner = analysisRunner;
         this.frontendUrl = frontendUrl;
     }
 
@@ -52,7 +52,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         AnalysisJob job = new AnalysisJob(login);
         job.setUserId(user.getId());
         job = jobRepository.save(job);
-        queuePublisher.enqueue(job.getId());
+        analysisRunner.runAsync(job.getId());
 
         response.sendRedirect(frontendUrl + "/dev/" + login + "?job=" + job.getId());
     }

@@ -2,7 +2,7 @@ package dev.devwrapped.backend.share;
 
 import java.util.Map;
 
-/** Shared emoji/animal label/tagline lookup for the 10 developer types (worker's DeveloperTypeScorer owns the list). */
+/** Shared emoji/animal label/tagline lookup for the 10 developer types (scoring.DeveloperTypeScorer owns the list). */
 final class DeveloperTypeMeta {
 
     private static final Map<String, String> EMOJI = Map.ofEntries(
