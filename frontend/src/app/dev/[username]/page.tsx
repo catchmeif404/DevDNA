@@ -139,6 +139,17 @@ export default function ResultPage() {
           가장 활발한 요일: {weekdayLabel(result.peakWeekday)}요일
         </div>
 
+        <div className="mt-10 flex flex-col items-center gap-2">
+          <img src={badgeUrl(result.githubUsername)} alt="DevDNA badge" className="h-auto max-w-full" />
+          <button
+            type="button"
+            onClick={copyBadgeMarkdown}
+            className="rounded-lg bg-slate-900/60 px-5 py-2 text-sm font-semibold hover:bg-slate-800"
+          >
+            {badgeCopied ? "복사됨!" : "README 뱃지 마크다운 복사"}
+          </button>
+        </div>
+
         <div className="mt-10">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
             Personality
@@ -213,17 +224,6 @@ export default function ResultPage() {
             >
               Threads에 공유하기
             </a>
-          </div>
-
-          <div className="mt-4 flex flex-col items-center gap-2">
-            <img src={badgeUrl(result.githubUsername)} alt="DevDNA badge" className="h-auto max-w-full" />
-            <button
-              type="button"
-              onClick={copyBadgeMarkdown}
-              className="rounded-lg bg-slate-900/60 px-5 py-2 text-sm font-semibold hover:bg-slate-800"
-            >
-              {badgeCopied ? "복사됨!" : "README 뱃지 마크다운 복사"}
-            </button>
           </div>
 
           <Link
