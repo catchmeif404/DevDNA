@@ -86,7 +86,7 @@ public class GithubApiClient {
 
     private void sleepBetweenSearchPages() {
         try {
-            Thread.sleep(1200);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);

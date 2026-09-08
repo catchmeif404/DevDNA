@@ -21,6 +21,12 @@ import tools.jackson.databind.ObjectMapper;
  * old queue's LPOP-without-visibility-timeout design already gave up an in-flight job on a crash
  * just like this does - so nothing durability-wise is actually lost. See docs/설계문서.md for the
  * original (deliberately over-built, portfolio-motivated) queue+worker design if reviving it.
+ *
+ * <p>One thing the old design got "for free" that this needed to restore deliberately:
+ * {@code @Async("analysisExecutor")} runs on a single-thread executor (see AsyncConfig), not
+ * Spring Boot's default pool of 8 - two analyses running concurrently would otherwise multiply
+ * the burst of requests GithubApiClient sends against GitHub's shared-per-token secondary rate
+ * limit. The old queue consumer serialized this automatically by only having one thread.
  */
 @Component
 public class AnalysisRunner {
@@ -47,7 +53,7 @@ public class AnalysisRunner {
         this.objectMapper = objectMapper;
     }
 
-    @Async
+    @Async("analysisExecutor")
     public void runAsync(Long jobId) {
         AnalysisJob job = jobRepository.findById(jobId).orElse(null);
         if (job == null) {
