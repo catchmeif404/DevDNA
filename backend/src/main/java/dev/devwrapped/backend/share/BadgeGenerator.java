@@ -84,7 +84,7 @@ public class BadgeGenerator {
         String ariaLabel = founderRank == null
                 ? escapeXml(line2)
                 : "%s — Founding member #%d".formatted(escapeXml(line2), founderRank);
-        String founderRibbon = founderRank == null ? "" : founderRibbon(totalWidth, founderRank);
+        String founderRibbon = founderRank == null ? "" : founderCrown(founderRank);
 
         return """
                 <svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" role="img" aria-label="DevDNA: %s">
@@ -137,22 +137,27 @@ public class BadgeGenerator {
     }
 
     /**
-     * Small pulsing gold star chip near the top-right, marking one of the first 3 users. The
-     * outer badge is a pill (rx = HEIGHT / 2, i.e. fully rounded caps), so this sits well inside
-     * the top-right cap's curve rather than at the literal corner, which would poke outside it.
+     * Small gold crown resting on top of the mascot's icon circle, marking one of the first 3
+     * users. Anchored to the icon circle's fixed center (MARGIN + ICON_SIZE / 2, always 29,29
+     * regardless of developer type) rather than to any mascot's own artwork, so it works
+     * identically for all 10 mascots with no per-type tuning.
      */
-    private String founderRibbon(int totalWidth, int founderRank) {
-        int cx = totalWidth - 16;
-        int cy = 15;
+    private String founderCrown(int founderRank) {
+        int cx = MARGIN + ICON_SIZE / 2;
+        int topY = 8;
         return """
-                <g>
+                <g transform="translate(%d %d)">
                   <title>Founding member #%d</title>
-                  <circle cx="%d" cy="%d" r="7" fill="#facc15" stroke="#78350f" stroke-width="1.1">
-                    <animate attributeName="r" values="6.3;7.6;6.3" dur="1.8s" repeatCount="indefinite"/>
-                  </circle>
-                  <path transform="translate(%d %d) scale(0.8)" d="M0 -5.4 L1.6 -1.9 L5.4 -1.4 L2.6 1.1 L3.4 4.9 L0 3 L-3.4 4.9 L-2.6 1.1 L-5.4 -1.4 L-1.6 -1.9 Z" fill="#78350f"/>
+                  <g>
+                    <animateTransform attributeName="transform" type="translate" values="0 0;0 -1.5;0 0" dur="2s" repeatCount="indefinite"/>
+                    <path d="M-11 7 L-11 -1 L-5.5 4 L0 -6 L5.5 4 L11 -1 L11 7 Z" fill="#facc15" stroke="#78350f" stroke-width="1.1" stroke-linejoin="round"/>
+                    <rect x="-11" y="4.6" width="22" height="3.4" rx="1" fill="#eab308" stroke="#78350f" stroke-width="0.8"/>
+                    <circle cx="-11" cy="-1" r="1.7" fill="#fde68a"/>
+                    <circle cx="0" cy="-6" r="2" fill="#fde68a"/>
+                    <circle cx="11" cy="-1" r="1.7" fill="#fde68a"/>
+                  </g>
                 </g>
-                """.formatted(founderRank, cx, cy, cx, cy);
+                """.formatted(cx, topY, founderRank);
     }
 
     private String animalMascot(String developerType, int x, String accentColor) {
