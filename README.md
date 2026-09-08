@@ -4,7 +4,9 @@
 
 **Turn your public GitHub activity into a tiny developer identity worth showing off.**
 
-Live demo: **not deployed yet**
+[![DevDNA](https://devdna-production-1d53.up.railway.app/api/badge/catchmeif404.svg)](https://devdna-frontend.99kimst.workers.dev/dev/catchmeif404)
+
+Live demo: **https://devdna-frontend.99kimst.workers.dev**
 
 `catchmeif404`
 
@@ -42,15 +44,16 @@ feel like a small collectible.
 
 ## Badge
 
-Once the backend is deployed publicly and your account has been analyzed, add
-this to your GitHub profile README:
+Once your account has been analyzed, add this to your GitHub profile README
+(swap `catchmeif404` for your own GitHub username):
 
 ```markdown
-![DevDNA](https://<your-backend-domain>/api/badge/catchmeif404.svg)
+[![DevDNA](https://devdna-production-1d53.up.railway.app/api/badge/catchmeif404.svg)](https://devdna-frontend.99kimst.workers.dev/dev/catchmeif404)
 ```
 
 If the account has no saved analysis yet, the endpoint still returns a gray
-`no data yet` badge instead of a broken image.
+`no data yet` badge instead of a broken image. The first 3 accounts ever
+analyzed also get a small gold crown on their badge.
 
 Local preview:
 
@@ -58,7 +61,8 @@ Local preview:
 ![DevDNA](http://localhost:8090/api/badge/catchmeif404.svg)
 ```
 
-That only works on your machine. GitHub needs a public HTTPS backend URL.
+That only works on your machine. GitHub needs a public HTTPS backend URL —
+use the deployed one above for a real profile README.
 
 ## Stack
 
@@ -130,7 +134,6 @@ http://localhost:8090/api/auth/github/callback
 
 ## Known issues
 
-- Not deployed yet, so GitHub profile README badges only work as local preview.
 - No LLM integration yet. Summaries are rule-based templates.
 - Raw GitHub repo/commit data is not stored; only final analysis results are
   persisted.
@@ -142,7 +145,6 @@ http://localhost:8090/api/auth/github/callback
 
 ## Roadmap
 
-- Public deployment and real `catchmeif404` profile badge
 - Better mascot art pass for all 10 animals
 - Result page animal illustrations, not just README badges
 - Optional LLM-backed explanation after deterministic scoring
