@@ -15,12 +15,14 @@ public class ShareController {
     private final AnalysisResultRepository resultRepository;
     private final ShareCardGenerator cardGenerator;
     private final BadgeGenerator badgeGenerator;
+    private final FounderBadgeService founderBadgeService;
 
     public ShareController(AnalysisResultRepository resultRepository, ShareCardGenerator cardGenerator,
-            BadgeGenerator badgeGenerator) {
+            BadgeGenerator badgeGenerator, FounderBadgeService founderBadgeService) {
         this.resultRepository = resultRepository;
         this.cardGenerator = cardGenerator;
         this.badgeGenerator = badgeGenerator;
+        this.founderBadgeService = founderBadgeService;
     }
 
     @GetMapping("/api/share/{username}")
@@ -45,7 +47,9 @@ public class ShareController {
     @GetMapping(value = "/api/badge/{username:[A-Za-z0-9-]+}.svg", produces = "image/svg+xml")
     public ResponseEntity<String> badge(@PathVariable String username) {
         AnalysisResult result = resultRepository.findTopByGithubUsernameOrderByCreatedAtDesc(username).orElse(null);
-        String svg = result == null ? badgeGenerator.generateNoData() : badgeGenerator.generateForResult(result);
+        String svg = result == null
+                ? badgeGenerator.generateNoData()
+                : badgeGenerator.generateForResult(result, founderBadgeService.founderRank(username));
         return ResponseEntity.ok()
                 .contentType(MediaType.valueOf("image/svg+xml"))
                 .cacheControl(CacheControl.noCache())

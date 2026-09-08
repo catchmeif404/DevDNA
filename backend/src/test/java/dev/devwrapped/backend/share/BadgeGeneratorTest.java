@@ -16,7 +16,7 @@ class BadgeGeneratorTest {
         result.setTotalCommits(1842);
         result.setTopLanguage("Java");
 
-        String svg = generator.generateForResult(result);
+        String svg = generator.generateForResult(result, null);
 
         assertThat(svg).contains("aria-label=\"DevDNA: DEBUG CAT");
         assertThat(svg).contains("<animate ");
@@ -47,12 +47,26 @@ class BadgeGeneratorTest {
         result.setTotalPullRequests(89);
         result.setTopLanguage("Scala");
 
-        String svg = generator.generateForResult(result);
+        String svg = generator.generateForResult(result, null);
 
         assertThat(svg).contains("TEAM PENGUIN");
         assertThat(svg).contains("Team-powered maker");
         assertThat(svg).contains("89 PRs");
         assertThat(svg).contains("#fb7185");
         assertThat(svg).contains("type=\"scale\"");
+    }
+
+    @Test
+    void rendersFounderRibbonWhenRankGiven() {
+        AnalysisResult result = new AnalysisResult();
+        result.setDeveloperType("BUILDER");
+        result.setTotalCommits(500);
+        result.setTopLanguage("Go");
+
+        String withFounder = generator.generateForResult(result, 2);
+        String withoutFounder = generator.generateForResult(result, null);
+
+        assertThat(withFounder).contains("Founding member #2");
+        assertThat(withoutFounder).doesNotContain("Founding member");
     }
 }

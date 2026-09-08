@@ -20,16 +20,16 @@ public class BadgeGenerator {
     private static final String NO_DATA_COLOR = "#6b7280";
     private static final String NO_DATA_TEXT = "no data yet";
 
-    public String generateForResult(AnalysisResult result) {
+    public String generateForResult(AnalysisResult result, Integer founderRank) {
         String line2 = "%s · %s · %s".formatted(
                 DeveloperTypeMeta.label(result.getDeveloperType()),
                 achievement(result),
                 highlightStat(result));
-        return render(result.getDeveloperType(), line2, DeveloperTypeMeta.color(result.getDeveloperType()));
+        return render(result.getDeveloperType(), line2, DeveloperTypeMeta.color(result.getDeveloperType()), founderRank);
     }
 
     public String generateNoData() {
-        return render("NO_DATA", NO_DATA_TEXT, NO_DATA_COLOR);
+        return render("NO_DATA", NO_DATA_TEXT, NO_DATA_COLOR, null);
     }
 
     private String achievement(AnalysisResult result) {
@@ -74,13 +74,17 @@ public class BadgeGenerator {
         return "%,d".formatted(value);
     }
 
-    private String render(String developerType, String line2, String accentColor) {
+    private String render(String developerType, String line2, String accentColor, Integer founderRank) {
         String line1 = "DEVDNA";
         int line1Width = line1.length() * 6 + 12;
         int line2Width = line2.length() * 8 + 10;
         int totalWidth = TEXT_X + Math.max(line1Width, line2Width) + 18;
         int iconCenter = MARGIN + ICON_SIZE / 2;
         String mascot = animalMascot(developerType, MARGIN, accentColor);
+        String ariaLabel = founderRank == null
+                ? escapeXml(line2)
+                : "%s — Founding member #%d".formatted(escapeXml(line2), founderRank);
+        String founderRibbon = founderRank == null ? "" : founderRibbon(totalWidth, founderRank);
 
         return """
                 <svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" role="img" aria-label="DevDNA: %s">
@@ -115,10 +119,11 @@ public class BadgeGenerator {
                     <text x="%d" y="22" font-size="9" letter-spacing="1.2" fill-opacity="0.58">%s</text>
                     <text x="%d" y="40" font-size="14" font-weight="bold">%s</text>
                   </g>
+                  %s
                 </svg>
                 """
                 .formatted(
-                        totalWidth, HEIGHT, escapeXml(line2),
+                        totalWidth, HEIGHT, ariaLabel,
                         BG_START, BG_START, accentColor,
                         totalWidth - 1, HEIGHT - 1, HEIGHT / 2,
                         totalWidth - 1, HEIGHT - 1, HEIGHT / 2, accentColor,
@@ -127,7 +132,27 @@ public class BadgeGenerator {
                         iconCenter, HEIGHT / 2, accentColor,
                         mascot,
                         TEXT_X, line1,
-                        TEXT_X, escapeXml(line2));
+                        TEXT_X, escapeXml(line2),
+                        founderRibbon);
+    }
+
+    /**
+     * Small pulsing gold star chip near the top-right, marking one of the first 3 users. The
+     * outer badge is a pill (rx = HEIGHT / 2, i.e. fully rounded caps), so this sits well inside
+     * the top-right cap's curve rather than at the literal corner, which would poke outside it.
+     */
+    private String founderRibbon(int totalWidth, int founderRank) {
+        int cx = totalWidth - 16;
+        int cy = 15;
+        return """
+                <g>
+                  <title>Founding member #%d</title>
+                  <circle cx="%d" cy="%d" r="7" fill="#facc15" stroke="#78350f" stroke-width="1.1">
+                    <animate attributeName="r" values="6.3;7.6;6.3" dur="1.8s" repeatCount="indefinite"/>
+                  </circle>
+                  <path transform="translate(%d %d) scale(0.8)" d="M0 -5.4 L1.6 -1.9 L5.4 -1.4 L2.6 1.1 L3.4 4.9 L0 3 L-3.4 4.9 L-2.6 1.1 L-5.4 -1.4 L-1.6 -1.9 Z" fill="#78350f"/>
+                </g>
+                """.formatted(founderRank, cx, cy, cx, cy);
     }
 
     private String animalMascot(String developerType, int x, String accentColor) {
