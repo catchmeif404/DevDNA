@@ -30,6 +30,17 @@ server:
   # sees - breaking the OAuth2 redirect_uri (GitHub rejects it as a mismatch against the https://
   # callback URL registered on the OAuth App). This makes Spring trust X-Forwarded-Proto/Host/Port.
   forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        # Frontend (Cloudflare Workers) and backend (Railway) are different sites, so every
+        # fetch() the frontend makes is cross-site. Without SameSite=None (which requires
+        # Secure), Chrome defaults an unlabeled cookie to Lax and silently drops it on any
+        # cross-site fetch/XHR - the browser still *has* the cookie (set during the OAuth
+        # redirect, a same-site top-level navigation), it just won't attach it to API calls
+        # from frontend JS, so every authenticated call after login 401s.
+        same-site: none
+        secure: true
 
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3010}
