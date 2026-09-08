@@ -63,7 +63,7 @@ cd frontend && npm run build
 1. Frontend home page is a single "GitHub로 로그인" link to `GET /api/auth/github` (Spring Security's OAuth2 login, configured in `SecurityConfig` with `authorizationEndpoint` baseUri `/api/auth`).
 2. On success, `OAuth2LoginSuccessHandler` upserts the `User` row, **immediately creates an `AnalysisJob` for that account and hands it to `AnalysisRunner.runAsync`** (self-analysis only — there's no way to request analysis of another username), then redirects to `/dev/{login}?job={jobId}`.
 3. `POST /api/analyses` (`AnalysisController`) is the same job-creation path but requires an authenticated session; it ignores any client-supplied username and always uses `principal.getAttribute("login")`. `GET /api/analyses/{jobId}` (status) and `GET /api/analyses/{jobId}/result` stay public (`SecurityConfig` permits them) since they only expose data for a job that's already running.
-4. `AnalysisRunner.runAsync` (`analysis` package, `@Async` — enabled via `@EnableAsync` on `BackendApplication`) runs on Spring's default task executor, off the request thread: `CollectorService` (GitHub API) → `FeatureExtractor` (raw activity → `Features`) → `DeveloperTypeScorer` (`Features` → `ScoringResult`) → `SummaryGenerator` (rule-based text, not an LLM yet) → persists `AnalysisResult`, updates `AnalysisJob` status through `COLLECTING` → `ANALYZING` → `COMPLETED`/`FAILED`.
+4. `AnalysisRunner.runAsync` (`analysis` package, `@Async` — enabled via `@EnableAsync` on `BackendApplication`) runs on Spring's default task executor, off the request thread: `CollectorService` (GitHub API) → `FeatureExtractor` (raw activity → `Features`, commit-type classification inside it may call an LLM — see "Commit-type classification" below) → `DeveloperTypeScorer` (`Features` → `ScoringResult`) → `SummaryGenerator` (rule-based text, not an LLM) → persists `AnalysisResult`, updates `AnalysisJob` status through `COLLECTING` → `ANALYZING` → `COMPLETED`/`FAILED`.
 5. `GET /api/users/{username}/result` (`UserController`) also stays public and returns the latest result for any username regardless of who's logged in — analysis results are public GitHub-activity data, only *triggering* a new analysis is gated behind login.
 
 **No queue, no separate worker service.** This used to be a Redis list (`AnalysisQueuePublisher`) consumed by a standalone `worker/` Spring Boot app polling with a blocking `LPOP` loop — modeled after an SQS-backed architecture as a portfolio choice (see `docs/설계문서.md` §21), not because the traffic (one self-analysis per login) needed it. It was simplified to an in-process `@Async` call: same async, non-blocking behavior for the caller, one fewer service to run/deploy/pay for, and no real durability was actually lost — the old queue had no visibility timeout either, so a crash mid-job lost the job exactly like this does. If a job dies mid-run now, it just stays stuck at `COLLECTING`/`ANALYZING` with no auto-retry, same as before.
@@ -74,12 +74,36 @@ cd frontend && npm run build
 
 Scores persist as a single JSON `type_scores` column on `analysis_results` (added in `V2__type_scores.sql`, replacing 4 fixed score columns) — adding more types doesn't need another migration.
 
+### Commit-type classification (regex by default, LLM optional)
+
+`FeatureExtractor` no longer classifies each commit inline — it hands every commit message in the
+batch to `analyzer.CommitTypeResolver.resolveAll()`, which decides between two classifiers:
+
+- `analyzer.CommitClassifier` — the original Conventional-Commits-prefix + keyword regex rules.
+  Still the only classifier used when `ai.commit-classifier.provider` is unset/`regex` (the
+  default — no API key required, this is what local dev and any deploy without `ANTHROPIC_API_KEY`
+  gets).
+- `analyzer.ClaudeAiCommitClassifier` — classifies a chunk of raw commit messages (up to 100 at a
+  time, one Anthropic call per chunk via `ai.ClaudeApiClient`) into the same `CommitType` enum.
+  Selected by setting `ai.commit-classifier.provider=claude-api` (env `AI_COMMIT_CLASSIFIER_PROVIDER`)
+  plus `ANTHROPIC_API_KEY`. This is the one place raw commit text reaches an LLM — see the
+  `analyzer`/`ai` package-info docs for why that's still consistent with §14's "AI never computes a
+  statistic directly" rule: the model only ever emits one of the fixed `CommitType` labels, and
+  every ratio built from those labels afterward is still deterministic.
+
+`CommitTypeResolver` degrades per-chunk, never per-analysis: an AI call that throws, times out, or
+returns the wrong number of labels falls back to `CommitClassifier` for just that chunk (same
+provider-select-with-fallback shape as aws-cost-calculator's `ai.ExplanationService`) — a caller
+never sees an AI failure, only a less accurate classification for the affected commits.
+`CommitTypeResolverTest` covers the fallback/chunking behavior with fake `AiCommitClassifier`s, no
+Spring context or real API key needed.
+
 ### Package layout (Spring Boot, package-by-feature)
 
 Each package has a `package-info.java` with a one-line description — check it before adding to a package.
 
 - `auth` (GitHub OAuth2 login), `github` (API client stub, not yet implemented — unrelated to `collector` below, which is the real GitHub client used by the analysis pipeline), `analysis` (job status/result + `AnalysisRunner`, the `@Async` pipeline entry point), `user`, `share` (share cards / badge endpoints), `common` (security config, cross-cutting)
-- `collector` (GitHub API calls — `GithubApiClient`, `CollectorService`), `analyzer` (feature extraction, commit classification), `scoring` (developer-type rules + DNA vector), `ai` (feeds only computed features to the summary generator, never raw commit text — see §14/§20 of the design doc for why)
+- `collector` (GitHub API calls — `GithubApiClient`, `CollectorService`), `analyzer` (feature extraction, commit classification — see above), `scoring` (developer-type rules + DNA vector), `ai` (shared AI infra — `ClaudeApiClient` — plus `SummaryGenerator`, which feeds only computed features to text, never raw commit text; the one exception is `analyzer.ClaudeAiCommitClassifier`, described above)
 
 These last four packages moved here from the old `worker/` service — see "Async analysis" above.
 
@@ -100,6 +124,10 @@ The result page's "X에 공유하기" / "Threads에 공유하기" buttons are pl
 ### Known scope gaps (don't assume these exist)
 
 - No S3/R2 storage — share cards render on-demand as SVG from `analysis_results` on each request
-- No LLM integration — `SummaryGenerator` produces rule-based template text, not an AI call
+- `SummaryGenerator` is still rule-based template text, not an AI call. Commit-type classification
+  *can* use an LLM now (`ai.commit-classifier.provider=claude-api` — see "Commit-type
+  classification" above) but defaults to regex, and no deployed environment has
+  `ANTHROPIC_API_KEY`/the provider var set yet as of this writing — confirm both are actually
+  configured on Railway before assuming live analyses use it.
 - Raw collected GitHub data (repos/commits) is not persisted, only the final `analysis_results` row
 - Issues aren't collected at all (design doc mentions them); PRs are collected as a count only, not individual PR data (no `merged_at`, etc.)

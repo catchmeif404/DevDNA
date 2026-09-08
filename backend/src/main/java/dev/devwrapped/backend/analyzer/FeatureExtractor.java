@@ -8,19 +8,25 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
-/** Deterministic feature extraction — no AI in this step (section 9/14). */
+/**
+ * Deterministic feature extraction (section 9/14) — commit-type classification is the one step
+ * that may consult an LLM ({@link CommitTypeResolver}), but everything downstream of it (ratios,
+ * histograms, the returned {@link Features} record) is still plain arithmetic over a fixed list of
+ * labels, not a number an AI was asked to produce directly.
+ */
 @Component
 public class FeatureExtractor {
 
-    private final CommitClassifier classifier;
+    private final CommitTypeResolver commitTypeResolver;
 
-    public FeatureExtractor(CommitClassifier classifier) {
-        this.classifier = classifier;
+    public FeatureExtractor(CommitTypeResolver commitTypeResolver) {
+        this.commitTypeResolver = commitTypeResolver;
     }
 
     public Features extract(RawActivity raw) {
@@ -44,7 +50,14 @@ public class FeatureExtractor {
         Set<LocalDate> activeDays = new HashSet<>();
         Set<String> activeRepos = new HashSet<>();
 
-        for (GithubCommitItem commit : raw.commits()) {
+        List<String> messages = raw.commits().stream()
+                .map(commit -> commit.commit() == null ? null : commit.commit().message())
+                .toList();
+        List<CommitType> types = commitTypeResolver.resolveAll(messages);
+
+        List<GithubCommitItem> commits = raw.commits();
+        for (int i = 0; i < commits.size(); i++) {
+            GithubCommitItem commit = commits.get(i);
             String isoDate = commit.commit() == null || commit.commit().author() == null
                     ? null
                     : commit.commit().author().date();
@@ -65,9 +78,7 @@ public class FeatureExtractor {
             if (commit.repository() != null && commit.repository().fullName() != null) {
                 activeRepos.add(commit.repository().fullName());
             }
-            String message = commit.commit() == null ? null : commit.commit().message();
-            CommitType type = classifier.classify(message);
-            typeCounts.merge(type, 1, Integer::sum);
+            typeCounts.merge(types.get(i), 1, Integer::sum);
         }
 
         int commitCount = raw.commits().size();

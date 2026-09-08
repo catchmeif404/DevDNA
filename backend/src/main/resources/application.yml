@@ -49,3 +49,18 @@ app:
   # only ever reads public data). See collector.GithubApiClient.
   github:
     token: ${GITHUB_API_TOKEN:}
+
+ai:
+  # regex/none (default) = analyzer.CommitClassifier only, no API key needed, works out of the box.
+  # claude-api / gemini-api = the matching analyzer.AiCommitClassifier first, falling back to
+  # CommitClassifier per chunk on any failure. See analyzer.CommitTypeResolver.
+  commit-classifier:
+    provider: ${AI_COMMIT_CLASSIFIER_PROVIDER:regex}
+  claude:
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: ${ANTHROPIC_MODEL:claude-haiku-4-5-20251001}
+    timeout-seconds: 60
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-3.5-flash-lite}
+    timeout-seconds: 60
