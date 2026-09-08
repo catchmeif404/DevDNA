@@ -63,6 +63,12 @@ public class GithubApiClient {
     public List<GithubCommitItem> searchCommits(String username, String accessToken) {
         List<GithubCommitItem> all = new ArrayList<>();
         for (int page = 1; page <= MAX_SEARCH_PAGES; page++) {
+            // Firing all ~10 pages back-to-back trips GitHub's Search API *secondary* rate limit
+            // (abuse detection, separate from and much stricter than the per-minute quota) even
+            // with an authenticated token - it wants roughly a second between search requests.
+            if (page > 1) {
+                sleepBetweenSearchPages();
+            }
             GithubSearchResponse<GithubCommitItem> response = get(
                     "/search/commits?q=author:{username}&sort=author-date&order=desc&per_page={perPage}&page={page}",
                     new ParameterizedTypeReference<GithubSearchResponse<GithubCommitItem>>() {},
@@ -76,6 +82,15 @@ public class GithubApiClient {
             }
         }
         return all;
+    }
+
+    private void sleepBetweenSearchPages() {
+        try {
+            Thread.sleep(1200);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
     }
 
     public int countPullRequests(String username, String accessToken) {
@@ -106,11 +121,18 @@ public class GithubApiClient {
     private GithubApiException toGithubApiException(org.springframework.web.client.HttpStatusCodeException e) {
         HttpStatusCode status = e.getStatusCode();
         HttpHeaders headers = e.getResponseHeaders();
-        boolean rateLimited = status.value() == 403
+        boolean primaryRateLimited = status.value() == 403
                 && headers != null
                 && "0".equals(headers.getFirst("x-ratelimit-remaining"));
-        boolean retryable = rateLimited || status.value() == 429 || status.is5xxServerError();
-        String message = "GitHub API error " + status.value() + (rateLimited ? " (rate limited)" : "");
+        // Secondary (abuse-detection) rate limit: same 403 status, but x-ratelimit-remaining is
+        // untouched - GitHub signals it in the body instead. See sleepBetweenSearchPages, which
+        // exists to avoid tripping this in the first place.
+        boolean secondaryRateLimited = status.value() == 403
+                && e.getResponseBodyAsString().toLowerCase().contains("secondary rate limit");
+        boolean retryable = primaryRateLimited || secondaryRateLimited || status.value() == 429
+                || status.is5xxServerError();
+        String message = "GitHub API error " + status.value()
+                + (primaryRateLimited || secondaryRateLimited ? " (rate limited)" : "");
         return new GithubApiException(message, retryable);
     }
 }
