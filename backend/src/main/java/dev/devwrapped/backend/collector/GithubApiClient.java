@@ -25,7 +25,14 @@ import org.springframework.web.client.RestClient;
 public class GithubApiClient {
 
     private static final int PER_PAGE = 100;
-    private static final int MAX_SEARCH_PAGES = 10; // GitHub search caps results at 1000
+    // GitHub search caps results at 1000 (10 pages), but every extra page is another 2s-spaced
+    // request against the secondary rate limit shared across all concurrent users - capped lower
+    // to keep one analysis fast and the single-threaded queue (AsyncConfig) moving. Results come
+    // back newest-first, so this is "your most recent ~400 commits", not a random sample - most
+    // accounts never hit 400 commits at all and see no difference; the ratio-based scores
+    // (night-owl/bug-fix/refactor ratios etc.) barely move either way. Only raw commitVolumeNorm
+    // and very prolific committers' full history are affected.
+    private static final int MAX_SEARCH_PAGES = 4;
 
     private final RestClient restClient;
     private final String serverToken;
