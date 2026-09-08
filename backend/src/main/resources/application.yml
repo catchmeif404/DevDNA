@@ -25,6 +25,11 @@ spring:
 
 server:
   port: ${PORT:8080}
+  # Railway (and most PaaS) terminate TLS at the edge and proxy to the container over plain
+  # HTTP, so without this Spring reconstructs {baseUrl} as http:// from the request it actually
+  # sees - breaking the OAuth2 redirect_uri (GitHub rejects it as a mismatch against the https://
+  # callback URL registered on the OAuth App). This makes Spring trust X-Forwarded-Proto/Host/Port.
+  forward-headers-strategy: framework
 
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3010}
