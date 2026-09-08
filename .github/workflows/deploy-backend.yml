@@ -1,0 +1,34 @@
+name: Deploy Backend
+
+# Deploys the Spring Boot backend to Railway (Dockerfile build, see backend/railway.json).
+# Tag-triggered only, matching the pattern used for aws-cost-calculator/catchmeif404-admin in
+# this workspace.
+#
+# `railway up` runs from the REPO ROOT (not backend/) so it uploads the same shape Railway's own
+# GitHub-integration/dashboard build expects - both paths then agree on Root Directory = `backend`
+# with no divergence. Running it from within backend/ instead uploads a snapshot already scoped
+# to that folder, which conflicts with Root Directory = `backend` and intermittently fails with
+# "Root directory '/backend' was not found in the deployed source".
+#
+# Before this workflow can deploy: create the Railway project + Postgres + a `devdna-backend`
+# service (Dockerfile build, Root Directory = backend), and add a RAILWAY_TOKEN repo secret.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service devdna-backend --detach
