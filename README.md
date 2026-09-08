@@ -4,9 +4,9 @@
 
 **Turn your public GitHub activity into a tiny developer identity worth showing off.**
 
-[![DevDNA](https://devdna-production-1d53.up.railway.app/api/badge/catchmeif404.svg)](https://devdna-frontend.99kimst.workers.dev/dev/catchmeif404)
+[![DevDNA](https://devdna-production-1d53.up.railway.app/api/badge/catchmeif404.svg)](https://devdna.catchmeif404.com/dev/catchmeif404)
 
-Live demo: **https://devdna-frontend.99kimst.workers.dev**
+Live demo: **https://devdna.catchmeif404.com**
 
 `catchmeif404`
 
@@ -48,7 +48,7 @@ Once your account has been analyzed, add this to your GitHub profile README
 (swap `catchmeif404` for your own GitHub username):
 
 ```markdown
-[![DevDNA](https://devdna-production-1d53.up.railway.app/api/badge/catchmeif404.svg)](https://devdna-frontend.99kimst.workers.dev/dev/catchmeif404)
+[![DevDNA](https://devdna-production-1d53.up.railway.app/api/badge/catchmeif404.svg)](https://devdna.catchmeif404.com/dev/catchmeif404)
 ```
 
 If the account has no saved analysis yet, the endpoint still returns a gray
