@@ -22,16 +22,16 @@ public class BadgeGenerator {
                 + EvidenceSvg.count(result.getTotalPullRequests()) + " PRs";
         return render(subject, type, stats,
                 "LANGUAGE: " + EvidenceSvg.clean(result.getTopLanguage(), "UNRECORDED", 40),
-                founderRank, sample, false);
+                result.getDeveloperType(), founderRank, sample, false);
     }
 
     public String generateNoData() {
         return render("UNIDENTIFIED", "AWAITING EVIDENCE", "No public analysis on file.",
-                "STATUS: no data yet", null, false, true);
+                "STATUS: no data yet", null, null, false, true);
     }
 
     private String render(String subject, String type, String stats, String language,
-            Integer founderRank, boolean sample, boolean pending) {
+            String typeKey, Integer founderRank, boolean sample, boolean pending) {
         String founder = founderRank != null && founderRank > 0 ? "Founding member #" + founderRank : "";
         String status = sample ? "SAMPLE" : pending ? "PENDING" : "REVIEWED";
         String title = "DevDNA: " + (sample ? "SAMPLE / " : "") + subject + " / " + type
@@ -43,7 +43,7 @@ public class BadgeGenerator {
                 """
                 + EvidenceSvg.text(18, 27, 16, 340, "DEVDNA / EVIDENCE LABEL")
                 + EvidenceSvg.text(455, 27, 13, 125, status, "#a32b2b")
-                + EvidenceSvg.fingerprint(22, 56, 0.42)
+                + EvidenceSvg.typeMark(typeKey, 28, 61, 1.15)
                 + EvidenceSvg.text(130, 65, 10, 448, sample ? "SAMPLE SUBJECT" : "SUBJECT")
                 + EvidenceSvg.text(130, 86, 16, 448, subject)
                 + EvidenceSvg.text(130, 105, 10, 448, "TYPE")
@@ -53,4 +53,5 @@ public class BadgeGenerator {
                 + (founder.isEmpty() ? "" : EvidenceSvg.text(326, 182, 11, 256, founder, "#a32b2b"))
                 + "</svg>\n";
     }
+
 }

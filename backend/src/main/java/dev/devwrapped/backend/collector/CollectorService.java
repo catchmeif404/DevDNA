@@ -1,6 +1,8 @@
 package dev.devwrapped.backend.collector;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +26,31 @@ public class CollectorService {
         List<GithubRepoItem> repos = withRetry(() -> client.fetchOwnedRepositories(username, accessToken));
         List<GithubCommitItem> commits = withRetry(() -> client.searchCommits(username, accessToken));
         int prCount = withRetry(() -> client.countPullRequests(username, accessToken));
-        return new RawActivity(repos, commits, prCount);
+        return new RawActivity(repos, commits, prCount, observe(repos, commits));
+    }
+
+    private Observation observe(List<GithubRepoItem> repos, List<GithubCommitItem> commits) {
+        List<String> dates = commits.stream()
+                .map(commit -> commit.commit() == null || commit.commit().author() == null
+                        ? null : commit.commit().author().date())
+                .filter(date -> date != null && !date.isBlank())
+                .sorted()
+                .toList();
+        Map<String, Long> languages = repos.stream()
+                .map(GithubRepoItem::language)
+                .filter(language -> language != null && !language.isBlank())
+                .collect(Collectors.groupingBy(language -> language, Collectors.counting()));
+        return new Observation(
+                dates.isEmpty() ? "" : dates.getFirst(),
+                dates.isEmpty() ? "" : dates.getLast(),
+                commits.size() >= 400,
+                0,
+                0,
+                0,
+                0,
+                0,
+                Map.copyOf(languages),
+                commits.size() >= 400 ? List.of("Only the most recent 400 commits were sampled.") : List.of());
     }
 
     private <T> T withRetry(Supplier<T> call) {

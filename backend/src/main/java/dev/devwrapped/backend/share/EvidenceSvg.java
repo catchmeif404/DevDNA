@@ -84,4 +84,24 @@ final class EvidenceSvg {
                 </g>
                 """, x, y, scale);
     }
+
+    static String typeMark(String type, int x, int y, double scale) {
+        String shape = switch (type == null ? "" : type) {
+            case "NIGHT_OWL" -> "<path d=\"M18 34 A16 16 0 1 1 34 18 A12 12 0 1 0 18 34Z\"/>";
+            case "BUG_SLAYER" -> "<path d=\"M26 8 V42 M10 16 H42 M10 34 H42 M16 10 L8 4 M36 10 L44 4 M16 40 L8 48 M36 40 L44 48\"/><circle cx=\"26\" cy=\"25\" r=\"13\"/>";
+            case "BUILDER" -> "<path d=\"M8 42 H44 M12 42 V26 H24 V42 M28 42 V16 H40 V42 M8 16 H18 V8 H32\"/>";
+            case "POLYGLOT" -> "<path d=\"M26 5 L45 16 V38 L26 49 L7 38 V16Z M7 16 L26 27 L45 16 M26 27 V49\"/>";
+            case "WEEKEND_WARRIOR" -> "<path d=\"M8 38 L18 18 L28 30 L38 10 L46 38Z\"/>";
+            case "REFACTOR_MASTER" -> "<path d=\"M10 10 H27 A9 9 0 0 1 36 19 V39 M36 39 L28 31 M36 39 L44 31 M42 42 H25 A9 9 0 0 1 16 33 V13 M16 13 L8 21 M16 13 L24 21\"/>";
+            case "DOCUMENTARIAN" -> "<path d=\"M10 7 H42 V45 H10Z M17 16 H35 M17 25 H35 M17 34 H29\"/>";
+            case "TESTER" -> "<path d=\"M8 28 L20 40 L44 12\"/>";
+            case "EXPLORER" -> "<circle cx=\"26\" cy=\"26\" r=\"19\"/><path d=\"M26 7 V45 M7 26 H45 M14 14 L38 38 M38 14 L14 38\"/>";
+            case "COLLABORATOR" -> "<circle cx=\"17\" cy=\"17\" r=\"7\"/><circle cx=\"35\" cy=\"17\" r=\"7\"/><path d=\"M7 43 C8 30 26 30 27 43 M25 43 C26 30 44 30 45 43 M24 17 H28\"/>";
+            default -> "<circle cx=\"26\" cy=\"26\" r=\"19\"/><path d=\"M14 26 H38 M26 14 V38\"/>";
+        };
+        String frame = "<path d=\"M3 3 H49 V49 H3Z\"/><path d=\"M3 26 H49\"/><path d=\"M26 3 V49\"/><path d=\"M8 8 L44 44\"/><path d=\"M44 8 L8 44\"/>";
+        return String.format(Locale.ROOT,
+                "<g transform=\"translate(%d %d) scale(%.2f)\" fill=\"none\" stroke=\"#241f1a\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">%s</g>\n",
+                x, y, scale, frame + shape);
+    }
 }

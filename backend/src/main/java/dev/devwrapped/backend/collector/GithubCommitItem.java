@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record GithubCommitItem(CommitInfo commit, RepositoryInfo repository) {
+public record GithubCommitItem(CommitInfo commit, RepositoryInfo repository, String sha) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record CommitInfo(String message, CommitAuthorInfo author) {

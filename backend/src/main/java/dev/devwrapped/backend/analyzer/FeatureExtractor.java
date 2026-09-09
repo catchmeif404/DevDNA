@@ -1,7 +1,7 @@
 package dev.devwrapped.backend.analyzer;
 
 import dev.devwrapped.backend.collector.GithubCommitItem;
-import dev.devwrapped.backend.collector.GithubRepoItem;
+import dev.devwrapped.backend.collector.Observation;
 import dev.devwrapped.backend.collector.RawActivity;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 /**
@@ -30,10 +29,8 @@ public class FeatureExtractor {
     }
 
     public Features extract(RawActivity raw) {
-        Map<String, Long> languageCounts = raw.repositories().stream()
-                .map(GithubRepoItem::language)
-                .filter(lang -> lang != null && !lang.isBlank())
-                .collect(Collectors.groupingBy(lang -> lang, Collectors.counting()));
+        Observation observation = raw.observation() == null ? Observation.empty() : raw.observation();
+        Map<String, Long> languageCounts = observation.languages();
         long languageTotal = languageCounts.values().stream().mapToLong(Long::longValue).sum();
         Map<String, Double> languageRatios = new HashMap<>();
         languageCounts.forEach((lang, count) -> languageRatios.put(lang, languageTotal == 0 ? 0.0 : (double) count / languageTotal));
@@ -62,7 +59,7 @@ public class FeatureExtractor {
                     ? null
                     : commit.commit().author().date();
             if (isoDate != null) {
-                OffsetDateTime dateTime = OffsetDateTime.parse(isoDate);
+                OffsetDateTime dateTime = OffsetDateTime.parse(isoDate).withOffsetSameInstant(java.time.ZoneOffset.UTC);
                 int hour = dateTime.getHour();
                 DayOfWeek weekday = dateTime.getDayOfWeek();
                 hourHistogram[hour]++;
@@ -87,7 +84,7 @@ public class FeatureExtractor {
 
         return new Features(
                 commitCount,
-                raw.repositories().size(),
+                activeRepos.size(),
                 raw.pullRequestCount(),
                 languageCounts,
                 languageRatios,
@@ -102,7 +99,8 @@ public class FeatureExtractor {
                 ratio(typeCounts.getOrDefault(CommitType.DOCUMENTATION, 0), commitCount),
                 ratio(typeCounts.getOrDefault(CommitType.TEST, 0), commitCount),
                 activeDays.size(),
-                activeRepos.size());
+                activeRepos.size(),
+                observation);
     }
 
     private double ratio(int part, int total) {
