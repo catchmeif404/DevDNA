@@ -16,6 +16,9 @@ public class ShareCardGenerator {
         String subject = "@" + EvidenceSvg.clean(data.getGithubUsername(), "UNKNOWN", 39);
         String type = DeveloperTypeMeta.label(data.getDeveloperType());
         String title = "DevDNA / " + (sample ? "SAMPLE / " : "") + "Case file / " + subject + " / " + type;
+        String reviewStatus = sample ? "SAMPLE FILE" : pending ? "PENDING FILE"
+                : "INSUFFICIENT_EVIDENCE".equals(data.getClassificationStatus()) ? "LIMITED EVIDENCE"
+                : "UNCERTAIN".equals(data.getClassificationStatus()) ? "UNCERTAIN FILE" : "REF. DNA-404";
         return EvidenceSvg.open(600, 800, title) + """
                   <rect x="0.5" y="0.5" width="599" height="799" fill="#e8dcc3" stroke="#241f1a"/>
                   <rect x="20" y="20" width="560" height="760" fill="#f1e9d2" stroke="#241f1a" stroke-opacity="0.3"/>
@@ -23,7 +26,7 @@ public class ShareCardGenerator {
                         fill="none" stroke="#241f1a" stroke-opacity="0.35"/>
                 """
                 + EvidenceSvg.text(40, 49, 13, 300, "CATCHMEIF404 / PUBLIC RECORDS")
-                + EvidenceSvg.text(428, 49, 12, 132, sample ? "SAMPLE FILE" : "REF. DNA-404", "#a32b2b")
+                + EvidenceSvg.text(428, 49, 12, 132, reviewStatus, "#a32b2b")
                 + EvidenceSvg.text(40, 117, 38, 520, "DEVDNA")
                 + EvidenceSvg.text(40, 143, 13, 520, "DEVELOPER CASE FILE")
                 + EvidenceSvg.text(40, 173, 11, 520, sample ? "SUBJECT / SAMPLE - FICTIONAL" : "SUBJECT / GITHUB")

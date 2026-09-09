@@ -73,6 +73,22 @@ class DeveloperTypeScorerTest {
     }
 
     @Test
+    void marksSmallSamplesAsInsufficientEvidence() {
+        ScoringResult result = scorer.score(features(0.9, 0.0, Map.of("Java", 1L), 9, 3, 1, 0));
+
+        assertThat(result.developerType()).isEqualTo("UNCLASSIFIED");
+        assertThat(result.classificationStatus()).isEqualTo("INSUFFICIENT_EVIDENCE");
+    }
+
+    @Test
+    void marksCloseScoresAsUncertain() {
+        ScoringResult result = scorer.score(features(0.1, 0.1, Map.of("Java", 1L), 10, 10, 3, 0));
+
+        assertThat(result.classificationStatus()).isEqualTo("UNCERTAIN");
+        assertThat(result.classificationMargin()).isLessThan(8);
+    }
+
+    @Test
     void dnaVectorHasTenDimensionsClampedToUnitRange() {
         Features features = features(0.9, 0.9, Map.of("Java", 1L), 5000, 400, 100, 50);
         ScoringResult result = scorer.score(features);

@@ -46,6 +46,8 @@
     "subject": "SUBJECT",
     "report": "DEVDNA / FIELD REPORT",
     "reviewed": "EVIDENCE REVIEWED",
+    "classificationUncertain": "CLASSIFICATION UNCERTAIN",
+    "classificationInsufficient": "INSUFFICIENT EVIDENCE",
     "classification": "CLASSIFICATION",
     "evidence": "Activity on file",
     "commits": "Commits",
@@ -88,6 +90,11 @@
     "retry": "Check again",
     "summary": "Investigator's note",
     "noScores": "No behavioral scores on file."
+    ,"observationWindow": "Observation window: {from} to {to}.",
+    "observationWindowUnknown": "Observation window unavailable.",
+    "sampleLimit": "Only the most recent 400 commits were sampled.",
+    "uncertainNote": "The leading profiles are close. Treat this type as a pattern, not a verdict.",
+    "insufficientNote": "There is not enough public activity to make a reliable classification."
   },
   "weekday": {
     "1": "Monday",

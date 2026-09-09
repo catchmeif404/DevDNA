@@ -118,6 +118,12 @@ function Report({ result }: { result: AnalysisResult }) {
   const peakDay = result.peakWeekday >= 1 && result.peakWeekday <= 7
     ? weekday(String(result.peakWeekday)) : t("unrecorded");
   const number = (n: number) => n.toLocaleString(locale);
+  const classificationLabel = result.classificationStatus === "UNCERTAIN"
+    ? t("classificationUncertain")
+    : result.classificationStatus === "INSUFFICIENT_EVIDENCE" ? t("classificationInsufficient") : t("reviewed");
+  const observationWindow = result.observationFrom && result.observationTo
+    ? t("observationWindow", { from: result.observationFrom.slice(0, 10), to: result.observationTo.slice(0, 10) })
+    : t("observationWindowUnknown");
 
   useEffect(() => {
     if (!feedback) return;
@@ -140,7 +146,7 @@ function Report({ result }: { result: AnalysisResult }) {
         <div className="section-kicker"><span>{t("report")}</span><span>{meta.code}</span></div>
         <div className="result-identity">
           <div><span className="field-label">{t("subject")}</span><strong className="subject-name">@{result.githubUsername}</strong></div>
-          <span className="stamp">{t("reviewed")}</span>
+          <span className={`stamp ${result.classificationStatus !== "CLASSIFIED" ? "stamp-warning" : ""}`}>{classificationLabel}</span>
         </div>
         <Fingerprint size={48} strokeWidth={1.2} className="status-icon" aria-hidden="true" />
         <p className="type-code">{t("classification")} / {meta.code}</p>
@@ -160,6 +166,10 @@ function Report({ result }: { result: AnalysisResult }) {
           <div><dt>{t("mainLanguage")}</dt><dd>{result.topLanguage ?? t("unrecorded")}</dd></div>
           <div><dt>{t("mostActiveDay")}</dt><dd>{peakDay}</dd></div>
         </dl>
+        <p className="intake-note">{observationWindow}</p>
+        {result.commitSampleCapped && <p className="intake-note">{t("sampleLimit")}</p>}
+        {result.classificationStatus === "UNCERTAIN" && <p className="intake-note">{t("uncertainNote")}</p>}
+        {result.classificationStatus === "INSUFFICIENT_EVIDENCE" && <p className="intake-note">{t("insufficientNote")}</p>}
       </section>
       <section className="file-section" aria-labelledby="patterns-title">
         <div className="section-heading"><h2 id="patterns-title">{t("patterns")}</h2><span>02 / 03</span></div>

@@ -49,6 +49,7 @@ svg { flex-shrink: 0; }
 .redacted-subject span { display: block; background: #141210; height: 24px; width: 88px; }
 .redacted-subject span + span { width: 44px; }
 .stamp { display: inline-block; border: 3px double var(--stamp); color: var(--stamp); padding: 3px 10px; font-size: 12px; line-height: 1.5; transform: rotate(-4deg); font-weight: 700; }
+.stamp-warning { border-style: dashed; }
 .subject-record .stamp { margin-left: auto; }
 .intake-actions, .action-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
 .button { display: inline-flex; justify-content: center; align-items: center; gap: 10px; min-height: 46px; padding: 10px 16px; border: 1px solid var(--ink); border-radius: 2px; background: transparent; color: var(--ink); font-size: 14px; line-height: 1.5; text-decoration: none; text-align: center; }

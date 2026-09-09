@@ -22,6 +22,12 @@ export interface AnalysisResult {
   developerType: string;
   dnaVector: string | null;
   aiSummary: string | null;
+  observationFrom: string;
+  observationTo: string;
+  commitSampleCapped: boolean;
+  observationLimitations: string;
+  classificationStatus: "CLASSIFIED" | "UNCERTAIN" | "INSUFFICIENT_EVIDENCE";
+  classificationMargin: number;
 }
 
 async function json<T>(res: Response): Promise<T> {

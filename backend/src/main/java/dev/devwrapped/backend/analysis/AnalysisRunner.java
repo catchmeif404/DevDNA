@@ -90,6 +90,12 @@ public class AnalysisRunner {
             result.setDeveloperType(scoring.developerType());
             result.setDnaVector(toJson(scoring.dnaVector()));
             result.setAiSummary(summary);
+            result.setObservationFrom(features.observation().from());
+            result.setObservationTo(features.observation().to());
+            result.setCommitSampleCapped(features.observation().commitSampleCapped());
+            result.setObservationLimitations(toJson(features.observation().limitations()));
+            result.setClassificationStatus(scoring.classificationStatus());
+            result.setClassificationMargin(scoring.classificationMargin());
             resultRepository.save(result);
 
             job.setStatus(AnalysisStatus.COMPLETED);

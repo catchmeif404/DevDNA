@@ -25,6 +25,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class DeveloperTypeScorer {
 
+    private static final int MIN_COMMIT_EVIDENCE = 10;
+    private static final int UNCERTAIN_MARGIN = 8;
+
     public ScoringResult score(Features f) {
         double persistenceNorm = Math.min(1.0, f.distinctActiveDays() / 180.0);
         double languageDiversityNorm = Math.min(1.0, f.languageCounts().size() / 15.0);
@@ -43,10 +46,16 @@ public class DeveloperTypeScorer {
         scores.put("EXPLORER", pct(repositoryDiversityNorm));
         scores.put("COLLABORATOR", pct(prActivityNorm));
 
-        String developerType = scores.entrySet().stream()
+        String topType = scores.entrySet().stream()
                 .reduce((a, b) -> b.getValue() > a.getValue() ? b : a)
                 .map(Map.Entry::getKey)
                 .orElse("BUILDER");
+        List<Integer> rankedScores = scores.values().stream().sorted((a, b) -> Integer.compare(b, a)).toList();
+        int margin = rankedScores.size() < 2 ? 0 : rankedScores.get(0) - rankedScores.get(1);
+        String classificationStatus = f.commitCount() < MIN_COMMIT_EVIDENCE
+                ? "INSUFFICIENT_EVIDENCE"
+                : margin < UNCERTAIN_MARGIN ? "UNCERTAIN" : "CLASSIFIED";
+        String developerType = f.commitCount() < MIN_COMMIT_EVIDENCE ? "UNCLASSIFIED" : topType;
 
         double commitVolumeNorm = Math.min(1.0, f.commitCount() / 1000.0);
 
@@ -62,7 +71,7 @@ public class DeveloperTypeScorer {
                 round2(prActivityNorm),
                 round2(repositoryDiversityNorm));
 
-        return new ScoringResult(scores, developerType, dnaVector);
+        return new ScoringResult(scores, developerType, dnaVector, classificationStatus, margin);
     }
 
     private int pct(double ratio) {
