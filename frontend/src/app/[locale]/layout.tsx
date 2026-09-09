@@ -4,6 +4,7 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import SiteVisitTracker from "@/components/SiteVisitTracker";
 import "../globals.css";
 
 const courier = Courier_Prime({
@@ -63,7 +64,10 @@ export default async function LocaleLayout({
       className={`${courier.variable} ${specialElite.variable}`}
     >
       <body>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <SiteVisitTracker />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

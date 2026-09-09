@@ -68,6 +68,13 @@ cd frontend && npm run dev
 
 Backend needs Postgres reachable via `DB_*` env vars (defaults target `localhost`); `docker compose up -d postgres` works, or point it at any local Postgres (e.g. Homebrew services) as long as the `devwrapped`/`devwrapped` role+database exists. No Redis, no second service — see "Async analysis" below.
 
+## Internal metrics
+
+- `POST /api/site-visits/ping` records one page-view event with a browser-persisted anonymous
+  `visitorId`; it is public and does not require login.
+- `GET /api/internal/metrics/summary` returns member count, 30-day daily views, and distinct
+  visitor DAU/MAU for `catchmeif404-admin`. It requires `X-Admin-Client-Key`.
+
 ## Build, lint, test
 
 ```bash

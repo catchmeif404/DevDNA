@@ -1,5 +1,29 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8090";
 
+const VISITOR_ID_STORAGE_KEY = "devdna_visitor_id";
+
+function getOrCreateVisitorId(): string | null {
+  try {
+    const existing = window.localStorage.getItem(VISITOR_ID_STORAGE_KEY);
+    if (existing) return existing;
+    const generated = crypto.randomUUID();
+    window.localStorage.setItem(VISITOR_ID_STORAGE_KEY, generated);
+    return generated;
+  } catch {
+    return null;
+  }
+}
+
+export function pingSiteVisit() {
+  if (typeof window === "undefined") return;
+  fetch(`${API_URL}/api/site-visits/ping`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hostname: window.location.hostname, visitorId: getOrCreateVisitorId() }),
+    keepalive: true,
+  }).catch(() => undefined);
+}
+
 export type AnalysisStatus = "PENDING" | "COLLECTING" | "ANALYZING" | "COMPLETED" | "FAILED";
 
 export interface JobStatus {
