@@ -16,102 +16,117 @@ Live demo: **https://devdna.catchmeif404.com**
 
 ---
 
-## The case
+## 한국어
 
-GitHub holds the record: when you commit, what you fix, where you collaborate.
-DevDNA processes that public activity into a developer case file, an evidence
-label for your README, and a shareable investigation report. Motive still unclear.
+GitHub에는 언제 커밋했는지, 무엇을 고쳤는지, 어떤 프로젝트에서 활동했는지 기록이 남습니다.
+DevDNA는 이 공개 활동을 분석해 개발자 조사 기록, README용 증거물 배지, 공유 가능한 결과
+리포트를 만듭니다.
 
-GitHub에는 기록이 남습니다. 언제 커밋했는지, 무엇을 고쳤는지, 누구와 작업했는지.
-DevDNA는 공개 활동을 모아 개발자 조사 기록, README 증거물 라벨, 공유 보고서를
-작성합니다. 동기는 아직 불명.
+DevDNA는 로그인한 본인의 GitHub 계정만 분석합니다. 다른 사람의 계정을 익명으로 분석하거나
+개발자를 순위화하지 않습니다. 점수는 활동 패턴을 설명하기 위한 지표입니다.
 
-The paper, typewriter text, redaction marks, and red stamps follow the
-[catchmeif404 case-file site](https://catchmeif404.com). Scores describe activity
-patterns; they are not probabilities or a ranking of developers.
+### 주요 기능
 
-## What it does
+- GitHub OAuth 로그인 기반 자기 분석
+- 10가지 개발자 프로필 분류
+- README에 추가할 수 있는 SVG 증거물 배지
+- 공유 가능한 개발자 리포트 카드
+- 한국어와 영어 화면 및 공유 문구
+- 결정론적 규칙 기반 요약 생성
 
-- **Login-based self analysis** - sign in with GitHub and DevDNA analyzes the
-  account you logged in with. There is no anonymous "analyze anyone" flow.
-- **10 developer profiles** - After-hours Operator, Bug Hunter, Serial Builder,
-  Multilingual Operator, Weekend Operative, Code Restorer, Archivist,
-  Quality Inspector, Repo Explorer, and Collaborator. Stored scoring IDs are unchanged.
-- **README evidence label** - `GET /api/badge/{username}.svg` returns a static
-  SVG with the subject, classification, recorded counts, and an illustrative fingerprint.
-- **Share report** - `GET /api/share/{username}/card` renders a 600 x 800
-  SVG dossier from the latest saved result.
-- **English + Korean** - localized screens, statuses, and sharing text. Exported
-  evidence labels and reports use English archive headings.
-- **Rule-based summary** - the `ai_summary` field exists, but the MVP does not
-  call an LLM. It stores a deterministic template summary generated from the
-  computed features.
+### 배지 사용법
 
-## Badge
-
-Once your account has been analyzed, add this to your GitHub profile README
-(swap `catchmeif404` for your own GitHub username):
+GitHub 프로필 README에 아래 마크다운을 추가하세요. `catchmeif404`를 자신의 GitHub
+사용자명으로 바꾸면 됩니다.
 
 ```markdown
 [![DevDNA](https://devdna-production-1d53.up.railway.app/api/badge/catchmeif404.svg)](https://devdna.catchmeif404.com/dev/catchmeif404)
 ```
 
-If the account has no saved analysis yet, the endpoint returns an
-`AWAITING EVIDENCE` label instead of a broken image. The first 3 accounts ever
-analyzed retain a red `Founding member #N` annotation.
+아직 분석 결과가 없으면 깨진 이미지 대신 `AWAITING EVIDENCE` 배지가 표시됩니다.
 
-Fictional evidence-label and report samples are checked in at
-[`sample-badge.svg`](frontend/public/sample-badge.svg) and
-[`sample-card.svg`](frontend/public/sample-card.svg). Fingerprint artwork is
-illustrative, not biometric data or a visualization of the scoring vector.
+### 기술 스택
 
-Local preview:
+| 영역 | 기술 |
+|---|---|
+| 프론트엔드 | Next.js, TypeScript, Tailwind CSS |
+| 백엔드 | Spring Boot, Java 21, Flyway |
+| 데이터 | PostgreSQL |
+| 인증 | GitHub OAuth |
+| 배포 | Railway |
 
-```markdown
-![DevDNA](http://localhost:8090/api/badge/catchmeif404.svg)
+### 로컬 실행
+
+```bash
+cp .env.example .env
+docker compose up -d
 ```
 
-That only works on your machine. GitHub needs a public HTTPS backend URL —
-use the deployed one above for a real profile README.
+| 서비스 | 주소 |
+|---|---|
+| 프론트엔드 | http://localhost:3010 |
+| 백엔드 API | http://localhost:8090 |
 
-## Stack
+GitHub OAuth 로그인을 사용하려면 GitHub OAuth App을 만들고 다음 환경변수를 설정하세요.
 
-| | |
+```text
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
+```
+
+로컬 콜백 주소는 `http://localhost:8090/api/auth/github/callback`입니다.
+
+### 현재 제한사항
+
+- 요약은 아직 LLM이 아닌 규칙 기반 템플릿으로 생성됩니다.
+- 원본 GitHub 저장소와 커밋 데이터는 저장하지 않고 최종 분석 결과만 저장합니다.
+- 분석 중 백엔드가 재시작되면 진행 중인 작업은 자동으로 재시도되지 않습니다.
+- GitHub 사용자명 변경에 대한 결과 소유권 정규화가 아직 완전하지 않습니다.
+
+---
+
+## English
+
+GitHub keeps a record of when you commit, what you fix, and where you collaborate.
+DevDNA turns that public activity into a developer case file, an evidence badge for
+your README, and a shareable investigation report.
+
+DevDNA analyzes only the GitHub account you sign in with. There is no anonymous
+"analyze anyone" flow, and developers are not ranked. Scores describe activity
+patterns; they are not probabilities or judgments.
+
+### What it does
+
+- Login-based self analysis with GitHub OAuth
+- Ten developer profile classifications
+- An SVG evidence badge for your README
+- A shareable developer report card
+- English and Korean screens and sharing text
+- Deterministic, rule-based summaries
+
+### Add the badge
+
+Add this Markdown to your GitHub profile README. Replace `catchmeif404` with your
+GitHub username.
+
+```markdown
+[![DevDNA](https://devdna-production-1d53.up.railway.app/api/badge/catchmeif404.svg)](https://devdna.catchmeif404.com/dev/catchmeif404)
+```
+
+If an account has no saved analysis yet, the endpoint returns an `AWAITING EVIDENCE`
+badge instead of a broken image.
+
+### Stack
+
+| Area | Technology |
 |---|---|
 | Frontend | Next.js, TypeScript, Tailwind CSS |
 | Backend | Spring Boot, Java 21, Flyway |
-| Data | PostgreSQL for users/jobs/results |
+| Data | PostgreSQL |
 | Auth | GitHub OAuth |
-| Deployment target | Railway |
+| Deployment | Railway |
 
-## Architecture
-
-```text
-GitHub login
-    |
-    v
-Backend -- upsert user + create job --> PostgreSQL
-    |
-    +-- run analysis async (same process, no queue) --> GitHub API
-                                                            |
-                                                            v
-                                              extract features
-                                              score developer type
-                                              generate rule-based summary
-                                              persist result ----------------> PostgreSQL
-
-README <img> -- GET /api/badge/{username}.svg --> SVG evidence label
-```
-
-Analysis runs as a background task inside the backend process (`@Async`), not
-a separate worker service behind a queue. At this project's actual traffic —
-one self-analysis per login — a dedicated queue + worker (Redis, a second
-Spring Boot app) added ops complexity without a real durability or scaling
-benefit, so it was simplified away.
-
-## Running it locally
-
-Create environment variables, then start the full stack:
+### Run locally
 
 ```bash
 cp .env.example .env
@@ -123,71 +138,21 @@ docker compose up -d
 | Frontend | http://localhost:3010 |
 | Backend API | http://localhost:8090 |
 
-Health check:
-
-```bash
-curl http://localhost:8090/actuator/health
-```
-
-For the login flow, create a real GitHub OAuth App and set:
+To use the GitHub login flow, create a GitHub OAuth App and set:
 
 ```text
 GITHUB_CLIENT_ID=...
 GITHUB_CLIENT_SECRET=...
 ```
 
-Local callback URL:
+The local callback URL is `http://localhost:8090/api/auth/github/callback`.
 
-```text
-http://localhost:8090/api/auth/github/callback
-```
+### Known limitations
 
-## Known issues
-
-- No LLM integration yet. Summaries are rule-based templates.
-- Raw GitHub repo/commit data is not stored; only final analysis results are
-  persisted.
-- If the backend process restarts mid-analysis, that in-flight job is lost
-  (stays stuck at COLLECTING/ANALYZING) with no automatic retry — same
-  failure mode the old Redis queue had, just without the extra service.
-- GitHub username changes are not fully normalized yet; results still keep a
-  denormalized `github_username` string for public lookup.
-
-## Roadmap
-
-- Localized text inside exported evidence labels and reports
-- Optional LLM-backed explanation after deterministic scoring
-- Retry/resume for a job that dies mid-analysis (currently just fails)
-- Username-change-safe result ownership model
-
-## Contributing
-
-Design verification (run the frontend on port 3010 first):
-
-```bash
-cd frontend
-npx playwright install chromium
-npm run test:ui
-```
-
-This uses fictional API fixtures and writes desktop/mobile screenshots to
-`frontend/artifacts/case-file/`. Set `DEVDNA_TEST_URL` to test a local Workers
-preview instead. It does not sign in to GitHub or create a real analysis.
-
-SVG checks and sample regeneration (Java 21):
-
-```bash
-cd backend
-./gradlew test --tests 'dev.devwrapped.backend.share.*'
-JAVA_TOOL_OPTIONS="-Ddevdna.previewDir=../frontend/public" ./gradlew test --tests '*SharePreviewTest' --rerun-tasks
-```
-
-Issues, ideas, and PRs are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md)
-before opening a PR.
-
-## License
-
-MIT
+- Summaries are rule-based templates; there is no LLM integration yet.
+- Raw GitHub repository and commit data is not stored; only final analysis results persist.
+- An in-flight analysis is not automatically retried if the backend restarts.
+- Result ownership is not fully normalized when a GitHub username changes.
 
 ---
 

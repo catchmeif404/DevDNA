@@ -32,7 +32,7 @@ and both locale paths whenever copy or UI behavior changes.
 
 ## Project
 
-DevDNA analyzes a GitHub user's public activity (commits, repos, PRs) and generates a "developer type" / stats card, similar in spirit to Spotify Wrapped. It is an open-source portfolio project (see `docs/설계문서.md` for the full design doc — written ahead of implementation, so treat it as intent/roadmap, not a description of current code; the README's "알려진 제약" section is the accurate current-state summary).
+DevDNA analyzes a GitHub user's public activity (commits, repos, PRs) and generates a "developer type" / stats card, similar in spirit to Spotify Wrapped. It is an open-source portfolio project; the README's "현재 제한사항" section is the accurate current-state summary.
 
 Full-stack, two deployable services in one repo:
 
@@ -94,7 +94,7 @@ cd frontend && npm run build
 4. `AnalysisRunner.runAsync` (`analysis` package, `@Async` — enabled via `@EnableAsync` on `BackendApplication`) runs on Spring's default task executor, off the request thread: `CollectorService` (GitHub API) → `FeatureExtractor` (raw activity → `Features`, commit-type classification inside it may call an LLM — see "Commit-type classification" below) → `DeveloperTypeScorer` (`Features` → `ScoringResult`) → `SummaryGenerator` (rule-based text, not an LLM) → persists `AnalysisResult`, updates `AnalysisJob` status through `COLLECTING` → `ANALYZING` → `COMPLETED`/`FAILED`.
 5. `GET /api/users/{username}/result` (`UserController`) also stays public and returns the latest result for any username regardless of who's logged in — analysis results are public GitHub-activity data, only *triggering* a new analysis is gated behind login.
 
-**No queue, no separate worker service.** This used to be a Redis list (`AnalysisQueuePublisher`) consumed by a standalone `worker/` Spring Boot app polling with a blocking `LPOP` loop — modeled after an SQS-backed architecture as a portfolio choice (see `docs/설계문서.md` §21), not because the traffic (one self-analysis per login) needed it. It was simplified to an in-process `@Async` call: same async, non-blocking behavior for the caller, one fewer service to run/deploy/pay for, and no real durability was actually lost — the old queue had no visibility timeout either, so a crash mid-job lost the job exactly like this does. If a job dies mid-run now, it just stays stuck at `COLLECTING`/`ANALYZING` with no auto-retry, same as before.
+**No queue, no separate worker service.** This used to be a Redis list (`AnalysisQueuePublisher`) consumed by a standalone `worker/` Spring Boot app polling with a blocking `LPOP` loop. It was simplified to an in-process `@Async` call: same async, non-blocking behavior for the caller, one fewer service to run/deploy/pay for, and no real durability was actually lost — the old queue had no visibility timeout either, so a crash mid-job lost the job exactly like this does. If a job dies mid-run now, it just stays stuck at `COLLECTING`/`ANALYZING` with no auto-retry, same as before.
 
 ### Developer-type scoring (10 types, not 4)
 
