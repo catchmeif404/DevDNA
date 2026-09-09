@@ -15,8 +15,8 @@
 <text x="40" y="239" font-size="11.00" textLength="161.04" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">01 / TYPE CLASSIFICATION</text>
 <text x="40" y="270" font-size="27.00" textLength="164.70" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">BUG HUNTER</text>
 <text x="40" y="295" font-size="13.00" textLength="237.90" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">Defects found. Tracks removed.</text>
-<text x="40" y="340" font-size="11.00" textLength="167.75" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">02 / ACTIVITY FINGERPRINT</text>
-<g transform="translate(57 352) scale(0.82)" fill="none" stroke="#241f1a"
+<text x="40" y="340" font-size="11.00" textLength="154.33" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">02 / TYPE EVIDENCE MARK</text>
+<g transform="translate(62 357) scale(0.62)" fill="none" stroke="#a32b2b"
    stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
   <path d="M12 92 C12 8 176 4 178 94 C180 143 159 179 144 201"/>
   <path d="M22 103 C12 28 156 4 167 85 C176 140 149 183 135 201"/>
@@ -31,7 +31,7 @@
 </g>
 <text x="288" y="382" font-size="12.00" textLength="183.00" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">EVIDENCE: PUBLIC ACTIVITY</text>
 <text x="288" y="407" font-size="12.00" textLength="102.48" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">SOURCE: GITHUB</text>
-<text x="288" y="432" font-size="11.00" textLength="120.78" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">ILLUSTRATIVE PRINT</text>
+<text x="288" y="432" font-size="11.00" textLength="73.81" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">TYPE EMBLEM</text>
 <g transform="rotate(-7 415 490)" fill="none" stroke="#a32b2b"><rect x="306" y="462" width="218" height="56" stroke-width="2"/><rect x="311" y="467" width="208" height="46"/><text x="327" y="499" font-size="26.00" textLength="95.16" lengthAdjust="spacingAndGlyphs" fill="#a32b2b" stroke="none">SAMPLE</text>
 </g><text x="40" y="574" font-size="11.00" textLength="120.78" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">03 / SAMPLE COUNTS</text>
 <path d="M211 587 V634 M387 587 V634" stroke="#241f1a" stroke-opacity="0.3"/><text x="40" y="608" font-size="24.00" textLength="73.20" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">1,842</text>

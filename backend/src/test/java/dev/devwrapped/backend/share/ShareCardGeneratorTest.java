@@ -20,7 +20,7 @@ class ShareCardGeneratorTest {
         assertThat(document.getDocumentElement().getTextContent()).contains(
                 "DEVDNA", "DEVELOPER CASE FILE", "SUBJECT / GITHUB", "@example-dev", "BUG HUNTER",
                 "1,842", "24", "89", "COMMITS", "REPOSITORIES", "PULL REQUESTS", "Java", "REVIEWED",
-                "ILLUSTRATIVE PRINT", "You found the file. You didn't find me.");
+                "TYPE EMBLEM", "You found the file. You didn't find me.");
     }
 
     @ParameterizedTest

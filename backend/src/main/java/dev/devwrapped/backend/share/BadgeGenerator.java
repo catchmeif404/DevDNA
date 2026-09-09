@@ -37,19 +37,19 @@ public class BadgeGenerator {
         String title = "DevDNA: " + (sample ? "SAMPLE / " : "") + subject + " / " + type
                 + (founder.isEmpty() ? "" : " / " + founder);
         return EvidenceSvg.open(600, 200, title) + """
-                  <rect x="0.5" y="0.5" width="599" height="199" fill="#f1e9d2" stroke="#241f1a"/>
-                  <rect x="1" y="1" width="598" height="40" fill="#e8dcc3"/>
-                  <path d="M16 42 H584 M116 54 V152 M16 162 H584" fill="none" stroke="#241f1a" stroke-opacity="0.35"/>
+                  <rect x="0.5" y="0.5" width="599" height="199" rx="16" fill="#f1e9d2" stroke="#d2c5aa"/>
+                  <rect x="18" y="18" width="100" height="132" rx="12" fill="#e8dcc3"/>
+                  <path d="M24 164 H576" fill="none" stroke="#241f1a" stroke-opacity="0.14"/>
                 """
-                + EvidenceSvg.text(18, 27, 16, 340, "DEVDNA / EVIDENCE LABEL")
-                + EvidenceSvg.text(455, 27, 13, 125, status, "#a32b2b")
-                + EvidenceSvg.typeMark(typeKey, 28, 61, 1.15)
-                + EvidenceSvg.text(130, 65, 10, 448, sample ? "SAMPLE SUBJECT" : "SUBJECT")
-                + EvidenceSvg.text(130, 86, 16, 448, subject)
-                + EvidenceSvg.text(130, 105, 10, 448, "TYPE")
-                + EvidenceSvg.text(130, 127, 19, 448, type)
-                + EvidenceSvg.text(130, 149, 12, 448, stats)
-                + EvidenceSvg.text(18, 182, 11, founder.isEmpty() ? 560 : 292, language)
+                + EvidenceSvg.text(36, 39, 12, 68, "DEVDNA")
+                + EvidenceSvg.text(140, 37, 10, 260, "PUBLIC RECORD / " + status, "#a32b2b")
+                + EvidenceSvg.typeMark(typeKey, 37, 57, 1.2)
+                + EvidenceSvg.text(32, 136, 8, 76, "EVIDENCE LABEL")
+                + EvidenceSvg.text(140, 65, 15, 436, subject)
+                + EvidenceSvg.text(140, 100, 24, 436, type)
+                + EvidenceSvg.text(140, 122, 9, 436, sample ? "SAMPLE SUBJECT" : "DEVELOPER PROFILE", "#756959")
+                + EvidenceSvg.text(140, 148, 12, 436, stats)
+                + EvidenceSvg.text(24, 182, 11, founder.isEmpty() ? 552 : 286, language)
                 + (founder.isEmpty() ? "" : EvidenceSvg.text(326, 182, 11, 256, founder, "#a32b2b"))
                 + "</svg>\n";
     }

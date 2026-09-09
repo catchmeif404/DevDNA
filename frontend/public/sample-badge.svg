@@ -2,12 +2,12 @@
      role="img" aria-label="DevDNA: SAMPLE / @example-dev / BUG HUNTER / Founding member #2" font-family="'Courier Prime', 'Courier New', monospace"
      fill="#241f1a" letter-spacing="0">
   <title>DevDNA: SAMPLE / @example-dev / BUG HUNTER / Founding member #2</title>
-  <rect x="0.5" y="0.5" width="599" height="199" fill="#f1e9d2" stroke="#241f1a"/>
-  <rect x="1" y="1" width="598" height="40" fill="#e8dcc3"/>
-  <path d="M16 42 H584 M116 54 V152 M16 162 H584" fill="none" stroke="#241f1a" stroke-opacity="0.35"/>
-<text x="18" y="27" font-size="16.00" textLength="224.48" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">DEVDNA / EVIDENCE LABEL</text>
-<text x="455" y="27" font-size="13.00" textLength="47.58" lengthAdjust="spacingAndGlyphs" fill="#a32b2b" stroke="none">SAMPLE</text>
-<g transform="translate(22 56) scale(0.42)" fill="none" stroke="#241f1a"
+  <rect x="0.5" y="0.5" width="599" height="199" rx="16" fill="#f1e9d2" stroke="#d2c5aa"/>
+  <rect x="18" y="18" width="100" height="132" rx="12" fill="#e8dcc3"/>
+  <path d="M24 164 H576" fill="none" stroke="#241f1a" stroke-opacity="0.14"/>
+<text x="36" y="39" font-size="12.00" textLength="43.92" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">DEVDNA</text>
+<text x="140" y="37" font-size="10.00" textLength="134.20" lengthAdjust="spacingAndGlyphs" fill="#a32b2b" stroke="none">PUBLIC RECORD / SAMPLE</text>
+<g transform="translate(37 57) scale(0.31)" fill="none" stroke="#a32b2b"
    stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
   <path d="M12 92 C12 8 176 4 178 94 C180 143 159 179 144 201"/>
   <path d="M22 103 C12 28 156 4 167 85 C176 140 149 183 135 201"/>
@@ -20,11 +20,11 @@
   <path d="M3 24 V3 H24 M164 3 H187 V24 M3 180 V208 H24 M164 208 H187 V180"
         stroke-opacity="0.45" stroke-width="1"/>
 </g>
-<text x="130" y="65" font-size="10.00" textLength="85.40" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">SAMPLE SUBJECT</text>
-<text x="130" y="86" font-size="16.00" textLength="117.12" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">@example-dev</text>
-<text x="130" y="105" font-size="10.00" textLength="24.40" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">TYPE</text>
-<text x="130" y="127" font-size="19.00" textLength="115.90" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">BUG HUNTER</text>
-<text x="130" y="149" font-size="12.00" textLength="241.56" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">1,842 commits / 24 repos / 89 PRs</text>
-<text x="18" y="182" font-size="11.00" textLength="93.94" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">LANGUAGE: Java</text>
+<text x="32" y="136" font-size="8.00" textLength="68.32" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">EVIDENCE LABEL</text>
+<text x="140" y="65" font-size="15.00" textLength="109.80" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">@example-dev</text>
+<text x="140" y="100" font-size="24.00" textLength="146.40" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">BUG HUNTER</text>
+<text x="140" y="122" font-size="9.00" textLength="76.86" lengthAdjust="spacingAndGlyphs" fill="#756959" stroke="none">SAMPLE SUBJECT</text>
+<text x="140" y="148" font-size="12.00" textLength="241.56" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">1,842 commits / 24 repos / 89 PRs</text>
+<text x="24" y="182" font-size="11.00" textLength="93.94" lengthAdjust="spacingAndGlyphs" fill="#241f1a" stroke="none">LANGUAGE: Java</text>
 <text x="326" y="182" font-size="11.00" textLength="120.78" lengthAdjust="spacingAndGlyphs" fill="#a32b2b" stroke="none">Founding member #2</text>
 </svg>

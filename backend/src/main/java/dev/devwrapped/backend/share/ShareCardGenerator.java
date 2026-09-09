@@ -35,7 +35,7 @@ public class ShareCardGenerator {
                 + EvidenceSvg.typeMark(data.getDeveloperType(), 62, 357, 2.4)
                 + EvidenceSvg.text(288, 382, 12, 272, "EVIDENCE: PUBLIC ACTIVITY")
                 + EvidenceSvg.text(288, 407, 12, 272, "SOURCE: GITHUB")
-                + EvidenceSvg.text(288, 432, 11, 272, "ILLUSTRATIVE PRINT")
+                + EvidenceSvg.text(288, 432, 11, 272, "TYPE EMBLEM")
                 + "<g transform=\"rotate(-7 415 490)\" fill=\"none\" stroke=\"#a32b2b\">"
                 + "<rect x=\"306\" y=\"462\" width=\"218\" height=\"56\" stroke-width=\"2\"/>"
                 + "<rect x=\"311\" y=\"467\" width=\"208\" height=\"46\"/>"

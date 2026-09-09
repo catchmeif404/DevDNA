@@ -27,6 +27,20 @@ class SharePreviewTest {
             Files.createDirectories(directory);
             Files.writeString(directory.resolve("sample-badge.svg"), badge);
             Files.writeString(directory.resolve("sample-card.svg"), card);
+            String[] types = {"NIGHT_OWL", "BUG_SLAYER", "BUILDER", "POLYGLOT", "WEEKEND_WARRIOR",
+                    "REFACTOR_MASTER", "DOCUMENTARIAN", "TESTER", "EXPLORER", "COLLABORATOR"};
+            StringBuilder gallery = new StringBuilder(EvidenceSvg.open(1264, 1152, "DevDNA / Type gallery"));
+            gallery.append("<rect width=\"1264\" height=\"1152\" fill=\"#faf7f0\"/>");
+            for (int i = 0; i < types.length; i++) {
+                result.setDeveloperType(types[i]);
+                String item = new BadgeGenerator().generateForResult(result, null, true);
+                ShareSvgTestSupport.parse(item);
+                Files.writeString(directory.resolve("badge-" + types[i] + ".svg"), item);
+                gallery.append("<g transform=\"translate(").append(24 + i % 2 * 616)
+                        .append(' ').append(24 + i / 2 * 224).append(")\">")
+                        .append(item).append("</g>");
+            }
+            Files.writeString(directory.resolve("badge-gallery.svg"), gallery.append("</svg>").toString());
         }
     }
 }

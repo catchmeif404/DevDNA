@@ -29,7 +29,8 @@ class BadgeGeneratorTest {
             assertThat(document.getDocumentElement().getTextContent()).contains(label, "@example-dev", "REVIEWED");
             assertThat(svg).contains("#e8dcc3", "#f1e9d2", "#241f1a", "#a32b2b", "Courier Prime", "Courier New");
             assertThat(svg).doesNotContain("<animate", "Gradient", "<script", "<image", "<foreignObject", "SAMPLE");
-            assertThat(document.getElementsByTagName("path").getLength()).isGreaterThan(5);
+            assertThat(document.getElementsByTagName("path").getLength()).isPositive();
+            assertThat(svg).doesNotContain("M8 8 L44 44", "M44 8 L8 44");
             ShareSvgTestSupport.assertTextWithinPage(document);
         }
         assertThat(badge).contains("1,842 commits / 24 repos / 89 PRs", "LANGUAGE: Java");
