@@ -44,6 +44,8 @@ server:
 
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3010}
+  admin:
+    metrics-api-key: ${ADMIN_METRICS_API_KEY:}
   # Optional - unset means every collector request is unauthenticated and shares GitHub's very
   # low per-IP rate limit across all users. A classic PAT with no scopes checked is enough (this
   # only ever reads public data). See collector.GithubApiClient.
