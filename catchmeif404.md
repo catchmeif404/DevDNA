@@ -1,6 +1,6 @@
-# CLAUDE.md
+# catchmeif404.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Project guidance for any AI coding agent working in this repository.
 
 ## Workspace directives
 
